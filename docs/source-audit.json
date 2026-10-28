@@ -1,0 +1,83 @@
+[
+  {
+    "sourceId": "sber21",
+    "url": "https://www.sberbank.com/common/img/uploaded/files/info/2022_IFRS_reporting.pdf",
+    "documentFileName": "invest-sber2022report.pdf",
+    "bytes": 1070524,
+    "sha256": "0f736f6e44142c7f98eae63e9ad467f449865578f1f5df4c9db826c27b1c5aaa",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "sber22",
+    "url": "https://www.sberbank.com/common/img/uploaded/files/info/2023_ifrs_reporting.pdf",
+    "documentFileName": "invest-sber2023report.pdf",
+    "bytes": 1804391,
+    "sha256": "724849f5047bb32bb1e13cb1d736b609a16d25974c9baf6ed805db4ed6a05b87",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "sber24",
+    "url": "https://www.sberbank.com/common/img/uploaded/files/info/reporting_4q_pmz4bfhv_2024.pdf",
+    "documentFileName": "invest-sber2024report.pdf",
+    "bytes": 4133527,
+    "sha256": "fbd4d739ce58c597b40fe1ea1c240fd6dcdaeb93ae455310c72f3600b6123ba1",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "sber25",
+    "url": "https://www.e-disclosure.ru/portal/FileLoad.ashx?Fileid=1912839",
+    "documentFileName": "Word_Rus_YE2025.pdf",
+    "bytes": 4097264,
+    "sha256": "06ac4bd4164d576e8256c1458730b04e505a5a784868fb93a81041e92e00f91f",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "t21",
+    "url": "https://www.annualreports.com/HostedData/AnnualReportArchive/t/LSE_TCS_2021.pdf",
+    "documentFileName": "invest-t2021report.pdf",
+    "bytes": 1772723,
+    "sha256": "d976747e78f3d55f8b9e0458e3f6edc84902afe7308f92d3fb724fbbe28a3a65",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "t23",
+    "url": "https://cdn.tbank-online.com/static/documents/edf2f41c-a25f-41e1-bcc7-858690f20bcb.pdf",
+    "documentFileName": "invest-t2023press.pdf",
+    "bytes": 706924,
+    "sha256": "ccda67e270ca9e59ede88f6d113c0003413ad6ac1cae4ff56e78bfb2b845590c",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "t24",
+    "url": "https://cdn.tbank-online.com/static/documents/9ffb398a-25a2-4c7d-a406-a017c0cf2375.pdf",
+    "documentFileName": "invest-t2024press.pdf",
+    "bytes": 453179,
+    "sha256": "2c865279632abb132cde8ce94644851928fca23de1a2828e9694e9d357cdd49d",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "t25press",
+    "url": "https://cdn.tbank-online.com/static/documents/28c2366b-4e68-43f2-a18d-68ef1ba68b2b.pdf",
+    "documentFileName": "invest-t2025press.pdf",
+    "bytes": 422363,
+    "sha256": "85a4dbc6c02d9264909b0f1a827b785f2e5f39f6ad10533012cfb380492f53d9",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  },
+  {
+    "sourceId": "t25",
+    "url": "https://www.e-disclosure.ru/portal/FileLoad.ashx?Fileid=1915341",
+    "documentFileName": "T_Technologies_IFRS_AUDIT RPRT_2025 RUS.pdf",
+    "bytes": 3558324,
+    "sha256": "b7f5081af385b43d2ec9ab5d37ea9769464a680fe04a6e814bcb9cf59951009d",
+    "accessed": "2026-10-28",
+    "note": "Хэш извлеченного PDF, если источник ZIP. Документы исследованы локально; полные файлы не распространяются вместе с сайтом."
+  }
+]

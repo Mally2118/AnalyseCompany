@@ -1,0 +1,418 @@
+import { ArrowRight, Sparkles, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { Card, KPI, Notice, NumberField, SectionIntro, Tag } from '../components/ui';
+import { FrontierChart, TimeChart } from '../charts/Charts';
+import type { AnalysisModel } from '../services/model';
+import { fmt, pct, rub } from '../utils/format';
+import { compound } from '../calculations/statistics';
+export interface PortfolioControls {
+  model: AnalysisModel;
+  weight: number;
+  setWeight: (w: number) => void;
+  rf: number;
+  setRf: (v: number) => void;
+  amount: number;
+  setAmount: (v: number) => void;
+  horizon: number;
+  setHorizon: (v: number) => void;
+  method: string;
+  setMethod: (m: string) => void;
+}
+export function WeightControl({
+  weight,
+  setWeight,
+}: {
+  weight: number;
+  setWeight: (w: number) => void;
+}) {
+  return (
+    <div className="weight-control">
+      <div className="weight-labels">
+        <span>
+          <i className="dot mint-bg" />
+          Сбербанк <strong>{fmt(weight * 100, 0)}%</strong>
+        </span>
+        <span>
+          <i className="dot blue-bg" />
+          Т-Технологии <strong>{fmt((1 - weight) * 100, 0)}%</strong>
+        </span>
+      </div>
+      <input
+        aria-label="Доля Сбербанка"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        value={Math.round(weight * 100)}
+        onChange={(e) => setWeight(Number(e.target.value) / 100)}
+        style={{
+          background: `linear-gradient(90deg, #40cbb0 ${weight * 100}%, #78a0ff ${weight * 100}%)`,
+        }}
+      />
+      <div className="range-labels">
+        <span>0% SBER</span>
+        <span>50 / 50</span>
+        <span>100% SBER</span>
+      </div>
+    </div>
+  );
+}
+export function PortfolioPage(p: PortfolioControls) {
+  const m = p.model.model,
+    s = p.model.selected;
+  if (!m || !s) return <Notice>Недостаточно синхронных наблюдений для оптимизации.</Notice>;
+  return (
+    <>
+      <SectionIntro
+        eyebrow="КОЛИЧЕСТВЕННЫЕ МОДЕЛИ"
+        title="Портфель, который имеет смысл"
+        description="Модель Марковица · два рискованных актива · без коротких продаж и кредитного плеча."
+      />
+      <div className="portfolio-layout">
+        <Card
+          title="Множество допустимых портфелей"
+          subtitle={`${p.model.pair.rows.length} синхронных месяцев · 101 комбинация с шагом 1%`}
+          action={<Tag color="mint">МАРКОВИЦ</Tag>}
+        >
+          <FrontierChart
+            points={m.points}
+            selected={s}
+            min={m.min}
+            max={m.max}
+            onSelect={(w) => {
+              p.setMethod('manual');
+              p.setWeight(w);
+            }}
+          />
+        </Card>
+        <Card title="Ваше распределение" subtitle="Измените вес и сравните результат">
+          <WeightControl
+            weight={p.weight}
+            setWeight={(w) => {
+              p.setMethod('manual');
+              p.setWeight(w);
+            }}
+          />
+          <div className="portfolio-result">
+            <div>
+              <span>Годовая доходность</span>
+              <strong className="positive">{pct(s.mean)}</strong>
+            </div>
+            <div>
+              <span>Годовой риск</span>
+              <strong>{pct(s.risk)}</strong>
+            </div>
+            <div>
+              <span>Коэффициент Шарпа</span>
+              <strong>{fmt(s.sharpe, 2)}</strong>
+            </div>
+          </div>
+          <NumberField
+            label="Безрисковая ставка, годовых"
+            value={p.rf * 100}
+            onChange={(v) => p.setRf(v / 100)}
+            max={50}
+            step={0.5}
+            suffix="%"
+          />
+          <p className="footnote">
+            Начальные 10% — учебное допущение, не историческая ставка. Rf месяца = (1 + Rf
+            года)^(1/12) − 1.
+          </p>
+          <button
+            className="button primary wide"
+            onClick={() => {
+              p.setMethod('sharpe');
+              p.setWeight(m.max.weight);
+            }}
+          >
+            <Sparkles size={16} />
+            Найти оптимальный портфель
+          </button>
+          <button
+            className="button wide"
+            onClick={() => {
+              p.setMethod('minimum');
+              p.setWeight(m.min.weight);
+            }}
+          >
+            <ShieldCheck size={16} />
+            Выбрать минимальный риск
+          </button>
+        </Card>
+      </div>
+      <div className="grid-two">
+        <Card
+          title="Портфель минимального риска"
+          subtitle="Минимум выборочной дисперсии среди 101 веса"
+        >
+          <div className="allocation">
+            <strong>
+              {fmt(m.min.weight * 100, 0)}
+              <small>% SBER</small>
+            </strong>
+            <span> / </span>
+            <strong>
+              {fmt((1 - m.min.weight) * 100, 0)}
+              <small>% T</small>
+            </strong>
+          </div>
+          <div className="triplet">
+            <div>
+              <span>Доходность</span>
+              <b>{pct(m.min.mean)}</b>
+            </div>
+            <div>
+              <span>Риск</span>
+              <b>{pct(m.min.risk)}</b>
+            </div>
+            <div>
+              <span>Sharpe</span>
+              <b>{fmt(m.min.sharpe, 2)}</b>
+            </div>
+          </div>
+        </Card>
+        <Card
+          title="Портфель максимального Sharpe"
+          subtitle="Максимальная премия к риску при заданной Rf"
+        >
+          <div className="allocation">
+            <strong>
+              {fmt(m.max.weight * 100, 0)}
+              <small>% SBER</small>
+            </strong>
+            <span> / </span>
+            <strong>
+              {fmt((1 - m.max.weight) * 100, 0)}
+              <small>% T</small>
+            </strong>
+          </div>
+          <div className="triplet">
+            <div>
+              <span>Доходность</span>
+              <b>{pct(m.max.mean)}</b>
+            </div>
+            <div>
+              <span>Риск</span>
+              <b>{pct(m.max.risk)}</b>
+            </div>
+            <div>
+              <span>Sharpe</span>
+              <b>{fmt(m.max.sharpe, 2)}</b>
+            </div>
+          </div>
+        </Card>
+      </div>
+      <Notice>
+        Эффективная доходность и эффективный риск — характеристики конкретного портфеля на
+        эффективной границе. Максимум Sharpe учитывает премию доходности над Rf, а минимум дисперсии
+        учитывает только риск, поэтому их веса могут различаться.
+      </Notice>
+      <Card
+        title="Методика и ковариационная матрица"
+        subtitle="Годовой масштаб: месячная ковариационная матрица × 12"
+      >
+        <div className="formula-grid">
+          <code>E(Rp) = w × E(Rs) + (1 − w) × E(Rt)</code>
+          <code>σp² = w²σs² + (1 − w)²σt² + 2w(1 − w)Cov(s,t)</code>
+          <code>Sharpe = (μмесяца − Rfмесяца) / σмесяца × √12</code>
+        </div>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Cov · год</th>
+                <th>SBER</th>
+                <th>T</th>
+              </tr>
+            </thead>
+            <tbody>
+              {m.covariance.map((r, i) => (
+                <tr key={i}>
+                  <th>{i === 0 ? 'SBER' : 'T'}</th>
+                  {r.map((v, j) => (
+                    <td key={j}>{fmt(v, 6)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="footnote">
+          Эффективные комбинации определяются проверкой доминирования: нет другого веса с меньшим
+          или равным риском и большей или равной доходностью при хотя бы одном строгом улучшении.
+          Доходность арифметическая, 12 × μ месяца; это оценка модели по истории. Предполагается
+          ежемесячное поддержание весов (ребалансировка) без издержек.
+        </p>
+      </Card>
+      <Card title="Все допустимые комбинации" subtitle="Выберите строку для изменения весов">
+        <div className="table-scroll compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>SBER</th>
+                <th>T</th>
+                <th>Доходность / год</th>
+                <th>Риск / год</th>
+                <th>Sharpe</th>
+                <th>Эффективный</th>
+              </tr>
+            </thead>
+            <tbody>
+              {m.points.map((q) => (
+                <tr key={q.weight} className={q.weight === p.weight ? 'selected-row' : ''}>
+                  <td>
+                    <button
+                      className="cell-button"
+                      onClick={() => {
+                        p.setMethod('manual');
+                        p.setWeight(q.weight);
+                      }}
+                    >
+                      {fmt(q.weight * 100, 0)}%
+                    </button>
+                  </td>
+                  <td>{fmt((1 - q.weight) * 100, 0)}%</td>
+                  <td>{pct(q.mean)}</td>
+                  <td>{pct(q.risk)}</td>
+                  <td>{fmt(q.sharpe, 2)}</td>
+                  <td>{q.efficient ? 'Да' : 'Нет'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </>
+  );
+}
+export function Calculator(p: PortfolioControls) {
+  const s = p.model.selected;
+  const path = Array.from({ length: p.horizon * 4 + 1 }, (_, i) => ({
+    year: i / 4,
+    ...Object.fromEntries(p.model.results.map((r) => [r.id, compound(p.amount, r.return, i / 4)])),
+  }));
+  return (
+    <>
+      <SectionIntro
+        eyebrow="ИНВЕСТИЦИОННЫЙ КАЛЬКУЛЯТОР"
+        title="От модели к вашему капиталу"
+        description="Настройте сумму, распределение и горизонт. Сравните сценарные результаты в рублях."
+      />
+      <div className="portfolio-layout">
+        <Card
+          title="Сценарная стоимость портфеля"
+          subtitle="Постоянная годовая ставка каждого сценария, сложный процент"
+        >
+          <TimeChart
+            data={path}
+            series={p.model.results.map((r) => ({ key: r.id, name: r.name, color: r.color }))}
+            xKey="year"
+            height={340}
+          />
+          <p className="footnote">
+            По горизонтали — лет от начала моделирования. Для горизонта более года механически
+            повторяется доходность сценария 2026: V = V₀ × (1 + R)^t. Это отдельное учебное
+            допущение, а не прогноз эмитентов на последующие годы.
+          </p>
+        </Card>
+        <Card title="Параметры инвестиций" action={<SlidersHorizontal size={17} />}>
+          <NumberField
+            label="Сумма инвестиций"
+            value={p.amount}
+            onChange={p.setAmount}
+            min={1000}
+            max={1000000000}
+            step={1000}
+            suffix="₽"
+          />
+          <NumberField
+            label="Инвестиционный горизонт"
+            value={p.horizon}
+            onChange={(v) => p.setHorizon(Math.round(v))}
+            min={1}
+            max={10}
+            suffix="лет"
+          />
+          <label className="field">
+            <span>Метод распределения</span>
+            <select
+              value={p.method}
+              onChange={(e) => {
+                const method = e.target.value;
+                p.setMethod(method);
+                if (method === 'minimum' && p.model.model) p.setWeight(p.model.model.min.weight);
+                if (method === 'sharpe' && p.model.model) p.setWeight(p.model.model.max.weight);
+              }}
+            >
+              <option value="manual">Вручную</option>
+              <option value="minimum">Минимальный риск</option>
+              <option value="sharpe">Максимальный Sharpe</option>
+            </select>
+          </label>
+          <WeightControl
+            weight={p.weight}
+            setWeight={(w) => {
+              p.setMethod('manual');
+              p.setWeight(w);
+            }}
+          />
+          <div className="investment-split">
+            <div>
+              <span>В Сбербанк</span>
+              <b>{rub(p.amount * p.weight)}</b>
+            </div>
+            <div>
+              <span>В Т-Технологии</span>
+              <b>{rub(p.amount * (1 - p.weight))}</b>
+            </div>
+          </div>
+        </Card>
+      </div>
+      <div className="kpi-grid three">
+        <KPI
+          label="Историческая доходность / год"
+          value={pct(s?.mean)}
+          detail="Арифметическая, на общей месячной выборке"
+        />
+        <KPI
+          label="Историческая волатильность / год"
+          value={pct(s?.risk)}
+          detail="При выбранных весах"
+          color="gold"
+        />
+        <KPI
+          label="Коэффициент Шарпа"
+          value={fmt(s?.sharpe, 2)}
+          detail={`При учебной Rf ${pct(p.rf)}`}
+          color="blue"
+        />
+      </div>
+      <div className="scenario-grid">
+        {p.model.results.map((r) => {
+          const v = compound(p.amount, r.return, p.horizon);
+          return (
+            <Card key={r.id} title={r.name} subtitle={`${p.horizon} лет · ${pct(r.return)} в год`}>
+              <span className="scenario-value" style={{ color: r.color }}>
+                {rub(v)}
+              </span>
+              <div className="scenario-profit">
+                Прибыль / убыток{' '}
+                <strong className={v - p.amount >= 0 ? 'positive' : 'negative'}>
+                  {rub(v - p.amount)}
+                </strong>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+      <Notice tone="warn">
+        Историческая средняя не гарантирует будущую доходность. Сценарии — редактируемые допущения
+        EPS × P/E с условными дивидендами. Налоги, комиссии, лоты и инфляция не учитываются; дробные
+        доли разрешены.
+      </Notice>
+      <a className="button" href="#forecast">
+        Изменить сценарии 2026 <ArrowRight size={15} />
+      </a>
+    </>
+  );
+}
