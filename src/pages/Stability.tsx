@@ -4,7 +4,7 @@ import { companies } from '../data/types';
 import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
 import { stability, marketRisk, fact } from '../calculations/analysis';
-import { Card, Notice, SectionIntro, Tag } from '../components/ui';
+import { Card, Disclosure, SectionIntro, Tag } from '../components/ui';
 import { pct, fmt } from '../utils/format';
 export function Stability({
   data,
@@ -19,8 +19,7 @@ export function Stability({
   return (
     <>
       <SectionIntro
-        eyebrow="ФИНАНСОВАЯ УСТОЙЧИВОСТЬ"
-        title="Два разных измерения риска"
+        title="Устойчивость"
         description="Состояние эмитента и риск вложения в его акции оцениваются отдельно."
       />
       <div className="grid-two">
@@ -34,23 +33,6 @@ export function Stability({
                 <strong>{a.category}</strong>
                 <Tag>{a.score ?? '—'} / 6</Tag>
               </div>
-              <div className="signal-list">
-                {a.signals.map((q) => (
-                  <div key={q.label}>
-                    <span className={q.ok === null ? 'muted' : q.ok ? 'positive' : 'negative'}>
-                      {q.ok === null ? (
-                        <Minus size={16} />
-                      ) : q.ok ? (
-                        <Check size={16} />
-                      ) : (
-                        <TriangleAlert size={16} />
-                      )}
-                    </span>
-                    <span>{q.label}</span>
-                    <strong>{q.value}</strong>
-                  </div>
-                ))}
-              </div>
               <div className="market-risk-panel">
                 <span>Риск рыночной инвестиции</span>
                 <Tag color={marketRisk(s) === 'Высокий' ? 'red' : 'gold'}>{marketRisk(s)}</Tag>
@@ -60,22 +42,44 @@ export function Stability({
                 </p>
               </div>
               <p className="footnote">
-                CoR: {fmt(fact(data.financial, c, 2024, 'cor'))}% →{' '}
-                {fmt(fact(data.financial, c, 2025, 'cor'))}%; ROE:{' '}
-                {fmt(fact(data.financial, c, 2024, 'roe'))}% →{' '}
-                {fmt(fact(data.financial, c, 2025, 'roe'))}%.{' '}
                 {c === 'T'
-                  ? 'Дополнительные риски: интеграция Росбанка, изменение периметра и доли неконтролирующих акционеров, допэмиссия и разовые эффекты инвестиций.'
-                  : 'Дополнительные риски: санкции, концентрация на российской экономике, кредитные потери и влияние высокой ставки на маржу.'}
+                  ? 'Основные риски: качество кредитов, интеграция Росбанка, допэмиссия.'
+                  : 'Основные риски: санкции, кредитные потери, высокая ставка.'}
               </p>
+              <Disclosure title="Шесть критериев">
+                <div className="signal-list">
+                  {a.signals.map((q) => (
+                    <div key={q.label}>
+                      <span className={q.ok === null ? 'muted' : q.ok ? 'positive' : 'negative'}>
+                        {q.ok === null ? (
+                          <Minus size={16} />
+                        ) : q.ok ? (
+                          <Check size={16} />
+                        ) : (
+                          <TriangleAlert size={16} />
+                        )}
+                      </span>
+                      <span>{q.label}</span>
+                      <strong>{q.value}</strong>
+                    </div>
+                  ))}
+                </div>
+                <p className="footnote">
+                  CoR: {fmt(fact(data.financial, c, 2024, 'cor'))}% →{' '}
+                  {fmt(fact(data.financial, c, 2025, 'cor'))}%; ROE:{' '}
+                  {fmt(fact(data.financial, c, 2024, 'roe'))}% →{' '}
+                  {fmt(fact(data.financial, c, 2025, 'roe'))}%.{' '}
+                  {c === 'T'
+                    ? 'Дополнительные риски: интеграция Росбанка, изменение периметра и доли неконтролирующих акционеров, допэмиссия и разовые эффекты инвестиций.'
+                    : 'Дополнительные риски: санкции, концентрация на российской экономике, кредитные потери и влияние высокой ставки на маржу.'}
+                </p>{' '}
+              </Disclosure>
             </Card>
           );
         })}
       </div>
-      <Card
-        title="Прозрачные критерии классификации"
-        subtitle="Учебная система сигналов; пороги не являются нормативами Банка России"
-      >
+      <Disclosure title="Методика оценки">
+        <p className="footnote">Учебные критерии; пороги не являются нормативами Банка России.</p>
         <div className="grid-two plain">
           <div>
             <h3>Финансовое положение</h3>
@@ -106,12 +110,12 @@ export function Stability({
           определения. Число сигналов позволяет обсуждать данные, но не ранжировать
           кредитоспособность с точностью рейтингового агентства.
         </p>
-      </Card>
-      <Notice tone="warn">
+      </Disclosure>
+      <p className="footnote">
         Дефолт и неплатёжеспособность — неспособность исполнять обязательства. Падение котировки и
         временный инвестиционный убыток сами по себе не доказывают дефолт. Положительная
         историческая доходность не исключает будущие убытки.
-      </Notice>
+      </p>
     </>
   );
 }

@@ -2,9 +2,8 @@ import { RefreshCw } from 'lucide-react';
 import type { Mode, Scenario, Company } from '../data/types';
 import { companies } from '../data/types';
 import type { AnalysisModel } from '../services/model';
-import { Card, Notice, NumberField, SectionIntro, Tag } from '../components/ui';
+import { Card, Disclosure, Hint, NumberField, SectionIntro } from '../components/ui';
 import { metricExplanation } from '../data/metric-help';
-import { Hint } from '../components/ui';
 import { fmt, pct, rub } from '../utils/format';
 export function Forecast({
   model,
@@ -30,182 +29,135 @@ export function Forecast({
   return (
     <>
       <SectionIntro
-        eyebrow="СЦЕНАРНЫЙ АНАЛИЗ · 2026"
-        title="Прогноз и инвестиционный вывод"
-        description="Три возможных траектории, прозрачные предпосылки и чувствительность к оценке бизнеса."
+        title="Прогноз 2026"
+        description="Три сценария на базе EPS 2025. Учебные допущения, без заданных вероятностей."
       >
         <button className="button" onClick={reset}>
           <RefreshCw size={15} />
           Сбросить допущения
         </button>
       </SectionIntro>
-      <Notice>
-        Это ретроспективное учебное моделирование 2026 года на базе отчётности за 2025,
-        опубликованной в 2026. Фактические результаты 2026 не используются. Модель не является
-        прогнозом, доступным на 31.12.2025, и не получает вероятностей сценариев без обоснования.
-      </Notice>
-      <Card
-        title="Как устроена оценка"
-        subtitle="P2026 = EPS2025 × (1 + g) × P/E · D = EPS2026 × payout"
-      >
-        <div className="grid-two plain">
-          <div>
-            <p>
-              Используется опубликованная базовая EPS: Сбер{' '}
-              <strong>{rub(model.eps.SBER, 2)}</strong>, Т <strong>{rub(model.eps.T, 3)}</strong>. T
-              и его цена на конец 2025 приведены к сплиту 1:10. EPS может включать разовые эффекты,
-              а число акций в будущем может измениться.
-            </p>
-            <p className="muted">
-              Полная доходность сценария = (целевая цена − цена 30.12.2025 + предполагаемый
-              дивиденд) / цена 30.12.2025. Реинвестирование внутри одного сценарного года не
-              предполагается.
-            </p>
-          </div>
-          <div className="model-caption">
-            <span>Моделируемый капитал</span>
-            <strong>{rub(amount)}</strong>
-            <span>
-              {fmt(weight * 100, 0)}% Сбербанк · {fmt((1 - weight) * 100, 0)}% Т-Технологии
-            </span>
-            <a href="#calculator">Изменить сумму и доли →</a>
-          </div>
-        </div>
-      </Card>
-      <Card
-        title="Исторический и сценарный P/E"
-        subtitle="База — цена на конец 2025 / базовая EPS 2025; это ретроспективное значение"
-      >
-        {model.valuations
-          .filter((v) => v.year === 2025 && cs.includes(v.company))
-          .map((v) => (
-            <p key={v.company}>
-              <strong>
-                {companies[v.company].name}: {fmt(v.pe, 2)} ×
-              </strong>{' '}
-              = {rub(v.price, 2)} / EPS {rub(v.eps, 3)}. <Hint text={metricExplanation('pe')} />
-            </p>
-          ))}
-        <p className="footnote">
-          Сценарный P/E ниже — редактируемое предположение. При неизменной EPS увеличение P/E на 10%
-          повышает модельную цену на 10%. Цена₂/цена₁ = P/E₂ ÷ P/E₁; историческое значение не
-          означает целевое.
-        </p>
-      </Card>
+      <p className="forecast-capital">
+        Капитал {rub(amount)} · {fmt(weight * 100, 0)}% SBER / {fmt((1 - weight) * 100, 0)}% T.{' '}
+        <a href="#calculator">Изменить</a>
+      </p>
       <div className="scenario-grid">
         {scenarios.map((s) => {
           const r = model.results.find((r) => r.id === s.id);
           return (
-            <Card key={s.id} className={`scenario-card scenario-${s.id}`}>
-              <div className="scenario-title">
-                <i style={{ background: s.color }} />
-                <h2>{s.name}</h2>
-                <Tag color={s.id === 'negative' ? 'red' : s.id === 'base' ? 'blue' : 'mint'}>
-                  2026
-                </Tag>
-              </div>
-              <p className="scenario-premise">{s.premise}</p>
-              {cs.map((c) => (
-                <div className="scenario-inputs" key={c}>
-                  <strong className="mini-company">{companies[c].name}</strong>
-                  <NumberField
-                    label="Изменение EPS"
-                    value={s[c === 'SBER' ? 'growthSBER' : 'growthT']}
-                    onChange={(v) => update(s.id, c === 'SBER' ? 'growthSBER' : 'growthT', v)}
-                    min={-95}
-                    max={100}
-                    suffix="%"
-                  />
-                  <div className="grid-two plain">
-                    <NumberField
-                      label="Сценарный P/E"
-                      value={s[c === 'SBER' ? 'peSBER' : 'peT']}
-                      onChange={(v) => update(s.id, c === 'SBER' ? 'peSBER' : 'peT', v)}
-                      min={0.5}
-                      max={30}
-                      step={0.5}
-                      suffix="×"
-                    />
-                    <NumberField
-                      label="Доля выплат"
-                      value={s[c === 'SBER' ? 'payoutSBER' : 'payoutT']}
-                      onChange={(v) => update(s.id, c === 'SBER' ? 'payoutSBER' : 'payoutT', v)}
-                      max={100}
-                      suffix="%"
-                    />
-                  </div>
-                  {r && (
-                    <div className="scenario-security">
+            <Card key={s.id} title={s.name} className={`scenario-card scenario-${s.id}`}>
+              {r ? (
+                <>
+                  {cs.map((c) => (
+                    <div className="scenario-security" key={c}>
+                      <strong className="mini-company">{companies[c].name}</strong>
                       <div>
-                        <span>Исторический P/E 2025</span>
-                        <b>
-                          {fmt(
-                            model.valuations.find((v) => v.company === c && v.year === 2025)?.pe,
-                            2,
-                          )}{' '}
-                          × → {fmt(s[c === 'SBER' ? 'peSBER' : 'peT'], 2)} × в сценарии
-                        </b>
-                      </div>
-                      <div>
-                        <span>Модельная цена</span>
+                        <span>Цена акции</span>
                         <b>{rub(r[c].price, 2)}</b>
                       </div>
                       <div>
-                        <span>Дивиденд</span>
-                        <b>{rub(r[c].dividend, 2)}</b>
-                      </div>
-                      <div>
-                        <span>Доходность</span>
-                        <b style={{ color: s.color }}>{pct(r[c].return)}</b>
+                        <span>Доходность с дивидендом</span>
+                        <b>{pct(r[c].return)}</b>
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
-              {r ? (
-                <div className="scenario-total">
-                  <span>Портфель · итог одного года</span>
-                  <strong style={{ color: s.color }}>{rub(r.value)}</strong>
-                  <span>
-                    Результат <b>{rub(r.profit)}</b> · {pct(r.return)}
-                  </span>
-                </div>
+                  ))}
+                  <div className="scenario-total">
+                    <span>Портфель · итог одного года</span>
+                    <strong>{rub(r.value)}</strong>
+                    <span>
+                      Прибыль / убыток{' '}
+                      <b className={r.profit >= 0 ? 'positive' : 'negative'}>{rub(r.profit)}</b> ·{' '}
+                      {pct(r.return)}
+                    </span>
+                  </div>
+                </>
               ) : (
-                <Notice>Нет подтверждённой EPS для сценарной оценки.</Notice>
+                <p>Нет подтверждённой EPS для оценки.</p>
               )}
-              <p className="footnote">
-                <b>Что может нарушить сценарий:</b> {s.risk} Допэмиссия и изменение дивидендной
-                политики также меняют результат.
-              </p>
+              <Disclosure title="Настроить сценарий">
+                <p className="footnote">{s.premise}</p>
+                {cs.map((c) => (
+                  <div className="scenario-inputs" key={c}>
+                    <strong className="mini-company">{companies[c].name}</strong>
+                    <NumberField
+                      label="Изменение EPS"
+                      value={s[c === 'SBER' ? 'growthSBER' : 'growthT']}
+                      onChange={(v) => update(s.id, c === 'SBER' ? 'growthSBER' : 'growthT', v)}
+                      min={-95}
+                      max={100}
+                      suffix="%"
+                    />
+                    <div className="grid-two plain">
+                      <NumberField
+                        label="Сценарный P/E"
+                        value={s[c === 'SBER' ? 'peSBER' : 'peT']}
+                        onChange={(v) => update(s.id, c === 'SBER' ? 'peSBER' : 'peT', v)}
+                        min={0.5}
+                        max={30}
+                        step={0.5}
+                        suffix="×"
+                      />
+                      <NumberField
+                        label="Доля выплат"
+                        value={s[c === 'SBER' ? 'payoutSBER' : 'payoutT']}
+                        onChange={(v) => update(s.id, c === 'SBER' ? 'payoutSBER' : 'payoutT', v)}
+                        max={100}
+                        suffix="%"
+                      />
+                    </div>
+                    <p className="footnote">
+                      Исторический P/E 2025:{' '}
+                      {fmt(model.valuations.find((v) => v.company === c && v.year === 2025)?.pe, 2)}{' '}
+                      ×. Дивиденд сценария: {rub(r?.[c].dividend, 2)}.{' '}
+                      <Hint text={metricExplanation('pe')} />
+                    </p>
+                  </div>
+                ))}
+                <p className="footnote">
+                  Риски: {s.risk} Допэмиссия и изменение дивидендной политики также меняют
+                  результат.
+                </p>
+              </Disclosure>
             </Card>
           );
         })}
       </div>
-      <Card
-        title="Инвестиционный вывод"
-        subtitle="Сформирован из текущих данных, весов и безрисковой ставки"
-      >
+      <Card title="Инвестиционный вывод">
+        <p>{model.conclusions[1]}</p>
+        <p className="compact-insight">
+          Минимальный исторический риск: {pct(model.model?.min.weight, 0)} SBER /{' '}
+          {pct(model.model ? 1 - model.model.min.weight : null, 0)} T. Сценарный результат зависит
+          от роста прибыли, дивидендов и рыночной оценки.
+        </p>
+      </Card>
+      <Disclosure title="Подробнее">
+        <h3>Методика прогноза</h3>
+        <p>
+          Цена = EPS2025 × (1 + g) × P/E; дивиденд = EPS2026 × доля выплат. Доходность = (цена −
+          цена конца 2025 + дивиденд) / цена конца 2025. Внутри года дивиденд не реинвестируется.
+        </p>
+        <p className="footnote">
+          Базовая EPS: Сбер {rub(model.eps.SBER, 2)}, Т {rub(model.eps.T, 3)}. Цена и EPS T на общей
+          базе сплита 1:10. EPS может содержать разовые эффекты, количество акций может измениться.
+        </p>
+        <p className="footnote">
+          Исторический P/E ретроспективный: годовая EPS опубликована позже даты цены. Сценарный P/E
+          — допущение. При неизменной EPS рост P/E на 10% повышает модельную цену на 10%.
+        </p>
+        <h3>Полный вывод</h3>
         <ol className="conclusion-list">
           {model.conclusions.map((t, i) => (
             <li key={i}>{t}</li>
           ))}
-          {model.results.length > 0 && (
-            <li>
-              При капитале {rub(amount)} сценарные результаты 2026:{' '}
-              {model.results
-                .map((r) => `${r.name.toLowerCase()} — ${rub(r.value)} (${pct(r.return)})`)
-                .join('; ')}
-              . Все три результата зависят от заданных EPS, P/E и доли выплат.
-            </li>
-          )}
         </ol>
-      </Card>
-      <Notice tone="warn">
-        Ограничения исследования: две группы из одного сектора, короткая история и структурные
-        изменения Т. Доходности, корреляция и оптимальные доли чувствительны к периоду наблюдения.
-        Ни пять годовых наблюдений, ни портфельная модель не позволяют достоверно предсказывать
-        банкротство.
-      </Notice>
+        <p className="footnote">
+          Ретроспективная учебная модель использует отчётность 2025, опубликованную в 2026, а не
+          информацию, доступную 31.12.2025. Фактические результаты 2026 не используются. Две
+          банковские группы, короткая история и структурные изменения ограничивают модель.
+          Историческая доходность не гарантирует будущую; банкротство по пяти наблюдениям не
+          предсказывается.
+        </p>
+      </Disclosure>
     </>
   );
 }

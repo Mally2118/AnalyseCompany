@@ -1,5 +1,5 @@
 import { ArrowRight, Sparkles, ShieldCheck, SlidersHorizontal } from 'lucide-react';
-import { Card, KPI, Notice, NumberField, SectionIntro, Tag, Hint } from '../components/ui';
+import { Card, Disclosure, Notice, NumberField, SectionIntro, Hint } from '../components/ui';
 import { FrontierChart, TimeChart } from '../charts/Charts';
 import type { AnalysisModel } from '../services/model';
 import { metricExplanation } from '../data/metric-help';
@@ -65,15 +65,13 @@ export function PortfolioPage(p: PortfolioControls) {
   return (
     <>
       <SectionIntro
-        eyebrow="КОЛИЧЕСТВЕННЫЕ МОДЕЛИ"
-        title="Портфель, который имеет смысл"
+        title="Портфель Марковица"
         description="Модель Марковица · два рискованных актива · без коротких продаж и кредитного плеча."
       />
       <div className="portfolio-layout">
         <Card
-          title="Множество допустимых портфелей"
+          title="Эффективная граница"
           subtitle={`${p.model.pair.rows.length} синхронных месяцев · 101 комбинация с шагом 1%`}
-          action={<Tag color="mint">МАРКОВИЦ</Tag>}
         >
           <FrontierChart
             points={m.points}
@@ -97,15 +95,9 @@ export function PortfolioPage(p: PortfolioControls) {
           <div className="portfolio-result">
             <div>
               <span>
-                Исторический CAGR портфеля <Hint text={metricExplanation('cagr')} />
+                Ожидаемая / год · арифм. <Hint text={metricExplanation('arithmetic')} />
               </span>
-              <strong>{pct(p.model.historical.selected.cagr, 2)}</strong>
-            </div>
-            <div>
-              <span>
-                Оценка доходности · арифметическая <Hint text={metricExplanation('arithmetic')} />
-              </span>
-              <strong className="positive">{pct(s.mean)}</strong>
+              <strong>{pct(s.mean)}</strong>
             </div>
             <div>
               <span>Годовой риск</span>
@@ -116,17 +108,10 @@ export function PortfolioPage(p: PortfolioControls) {
               <strong>{fmt(s.sharpe, 2)}</strong>
             </div>
           </div>
-          <NumberField
-            label="Безрисковая ставка, годовых"
-            value={p.rf * 100}
-            onChange={(v) => p.setRf(v / 100)}
-            max={50}
-            step={0.5}
-            suffix="%"
-          />
           <p className="footnote">
-            Начальные 10% — учебное допущение, не историческая ставка. Rf месяца = (1 + Rf
-            года)^(1/12) − 1.
+            Исторический CAGR: {pct(p.model.historical.selected.cagr, 2)}{' '}
+            <Hint text={metricExplanation('cagr')} /> · учебная Rf {pct(p.rf)}. История не
+            гарантирует будущий результат.
           </p>
           <button
             className="button primary wide"
@@ -136,7 +121,7 @@ export function PortfolioPage(p: PortfolioControls) {
             }}
           >
             <Sparkles size={16} />
-            Найти оптимальный портфель
+            Максимальный Шарп
           </button>
           <button
             className="button wide"
@@ -146,213 +131,225 @@ export function PortfolioPage(p: PortfolioControls) {
             }}
           >
             <ShieldCheck size={16} />
-            Выбрать минимальный риск
+            Минимальный риск
           </button>
         </Card>
       </div>
-      <Card
-        title="Арифметическая оценка и исторический CAGR"
-        subtitle={`База ${date(p.model.period.from)} — ${date(p.model.period.till)} · одинаковые даты и общая выборка для обоих активов`}
-      >
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Актив / портфель</th>
-                <th>12 × μ месяца</th>
-                <th>CAGR фактической стоимости</th>
-                <th>σ год</th>
-                <th>Sharpe</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(['SBER', 'T'] as const).map((c) => (
-                <tr key={c}>
-                  <th>{c} · 100%</th>
-                  <td>{pct(p.model.stats[c]?.annualMean, 2)}</td>
-                  <td>{pct(p.model.stats[c]?.cagr, 2)}</td>
-                  <td>{pct(p.model.stats[c]?.annualVol, 2)}</td>
-                  <td>{fmt(p.model.stats[c]?.sharpe, 3)}</td>
-                </tr>
-              ))}
-              <tr>
-                <th>Ваш портфель</th>
-                <td>{pct(s.mean, 2)}</td>
-                <td>{pct(p.model.historical.selected.cagr, 2)}</td>
-                <td>{pct(s.risk, 2)}</td>
-                <td>{fmt(s.sharpe, 3)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <Disclosure title="Методика и подробные расчёты">
+        <NumberField
+          label="Безрисковая ставка, годовых"
+          value={p.rf * 100}
+          onChange={(v) => p.setRf(v / 100)}
+          max={50}
+          step={0.5}
+          suffix="%"
+        />
         <p className="footnote">
-          Для Сбера за 2023–2025 значения 27,54% без дивидендов и 38,83% с дивидендами —
-          историческое среднее месяца × 12, а не стабильная ожидаемая ставка. Кризисные движения не
-          удаляются и не ограничиваются. CAGR учитывает реальную длительность периода и сложный
-          процент.
+          Начальные 10% Rf — учебное допущение. Rf месяца = (1 + Rf года)^(1/12) − 1.
         </p>
-        <p className="footnote">
-          Пятилетняя база 30.12.2020–30.12.2025 при текущих весах: арифметическая оценка{' '}
-          {pct(p.model.fiveYearPortfolio?.annualMean, 2)}, CAGR{' '}
-          {pct(p.model.fiveYearPortfolio?.cagr, 2)}.{' '}
-          {p.model.fiveYearPortfolio === null
-            ? 'Для пятилетнего портфеля с T нет полного дивидендного ряда; частичный результат не называется пятилетним.'
-            : ''}
-        </p>
-        <p className="footnote">
-          Модель Марковица использует {p.model.pair.rows.length} общих месячных интервалов; февраль
-          и март 2024 пропущены из-за отсутствующего конца февраля. Дневной портфельный CAGR
-          удерживает позиции через паузу: ребалансировка только в доступные общие концы месяцев. При
-          0% или 100% результат совпадает с соответствующим активом.
-        </p>
-      </Card>
-      <div className="grid-two">
         <Card
-          title="Портфель минимального риска"
-          subtitle="Минимум выборочной дисперсии среди 101 веса"
+          title="Арифметическая оценка и исторический CAGR"
+          subtitle={`База ${date(p.model.period.from)} — ${date(p.model.period.till)} · одинаковые даты и общая выборка для обоих активов`}
         >
-          <div className="allocation">
-            <strong>
-              {fmt(m.min.weight * 100, 0)}
-              <small>% SBER</small>
-            </strong>
-            <span> / </span>
-            <strong>
-              {fmt((1 - m.min.weight) * 100, 0)}
-              <small>% T</small>
-            </strong>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Актив / портфель</th>
+                  <th>12 × μ месяца</th>
+                  <th>CAGR фактической стоимости</th>
+                  <th>σ год</th>
+                  <th>Sharpe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(['SBER', 'T'] as const).map((c) => (
+                  <tr key={c}>
+                    <th>{c} · 100%</th>
+                    <td>{pct(p.model.stats[c]?.annualMean, 2)}</td>
+                    <td>{pct(p.model.stats[c]?.cagr, 2)}</td>
+                    <td>{pct(p.model.stats[c]?.annualVol, 2)}</td>
+                    <td>{fmt(p.model.stats[c]?.sharpe, 3)}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <th>Ваш портфель</th>
+                  <td>{pct(s.mean, 2)}</td>
+                  <td>{pct(p.model.historical.selected.cagr, 2)}</td>
+                  <td>{pct(s.risk, 2)}</td>
+                  <td>{fmt(s.sharpe, 3)}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div className="triplet">
-            <div>
-              <span>Арифм. оценка / год</span>
-              <b>{pct(m.min.mean)}</b>
+          <p className="footnote">
+            Для Сбера за 2023–2025 значения 27,54% без дивидендов и 38,83% с дивидендами —
+            историческое среднее месяца × 12, а не стабильная ожидаемая ставка. Кризисные движения
+            не удаляются и не ограничиваются. CAGR учитывает реальную длительность периода и сложный
+            процент.
+          </p>
+          <p className="footnote">
+            Пятилетняя база 30.12.2020–30.12.2025 при текущих весах: арифметическая оценка{' '}
+            {pct(p.model.fiveYearPortfolio?.annualMean, 2)}, CAGR{' '}
+            {pct(p.model.fiveYearPortfolio?.cagr, 2)}.{' '}
+            {p.model.fiveYearPortfolio === null
+              ? 'Для пятилетнего портфеля с T нет полного дивидендного ряда; частичный результат не называется пятилетним.'
+              : ''}
+          </p>
+          <p className="footnote">
+            Модель Марковица использует {p.model.pair.rows.length} общих месячных интервалов;
+            февраль и март 2024 пропущены из-за отсутствующего конца февраля. Дневной портфельный
+            CAGR удерживает позиции через паузу: ребалансировка только в доступные общие концы
+            месяцев. При 0% или 100% результат совпадает с соответствующим активом.
+          </p>
+        </Card>
+        <div className="grid-two">
+          <Card
+            title="Портфель минимального риска"
+            subtitle="Минимум выборочной дисперсии среди 101 веса"
+          >
+            <div className="allocation">
+              <strong>
+                {fmt(m.min.weight * 100, 0)}
+                <small>% SBER</small>
+              </strong>
+              <span> / </span>
+              <strong>
+                {fmt((1 - m.min.weight) * 100, 0)}
+                <small>% T</small>
+              </strong>
             </div>
-            <div>
-              <span>Риск</span>
-              <b>{pct(m.min.risk)}</b>
+            <div className="triplet">
+              <div>
+                <span>Арифм. оценка / год</span>
+                <b>{pct(m.min.mean)}</b>
+              </div>
+              <div>
+                <span>Риск</span>
+                <b>{pct(m.min.risk)}</b>
+              </div>
+              <div>
+                <span>Sharpe</span>
+                <b>{fmt(m.min.sharpe, 2)}</b>
+              </div>
             </div>
-            <div>
-              <span>Sharpe</span>
-              <b>{fmt(m.min.sharpe, 2)}</b>
+          </Card>
+          <Card
+            title="Портфель максимального Sharpe"
+            subtitle="Максимальная премия к риску при заданной Rf"
+          >
+            <div className="allocation">
+              <strong>
+                {fmt(m.max.weight * 100, 0)}
+                <small>% SBER</small>
+              </strong>
+              <span> / </span>
+              <strong>
+                {fmt((1 - m.max.weight) * 100, 0)}
+                <small>% T</small>
+              </strong>
             </div>
+            <div className="triplet">
+              <div>
+                <span>Арифм. оценка / год</span>
+                <b>{pct(m.max.mean)}</b>
+              </div>
+              <div>
+                <span>Риск</span>
+                <b>{pct(m.max.risk)}</b>
+              </div>
+              <div>
+                <span>Sharpe</span>
+                <b>{fmt(m.max.sharpe, 2)}</b>
+              </div>
+            </div>
+          </Card>
+        </div>
+        <Notice>
+          Эффективная доходность и эффективный риск — характеристики конкретного портфеля на
+          эффективной границе. Максимум Sharpe учитывает премию доходности над Rf, а минимум
+          дисперсии учитывает только риск, поэтому их веса могут различаться.
+        </Notice>
+        <Card
+          title="Методика и ковариационная матрица"
+          subtitle="Годовой масштаб: месячная ковариационная матрица × 12"
+        >
+          <div className="formula-grid">
+            <code>E(Rp) = w × E(Rs) + (1 − w) × E(Rt)</code>
+            <code>σp² = w²σs² + (1 − w)²σt² + 2w(1 − w)Cov(s,t)</code>
+            <code>Sharpe = (μмесяца − Rfмесяца) / σмесяца × √12</code>
+          </div>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cov · год</th>
+                  <th>SBER</th>
+                  <th>T</th>
+                </tr>
+              </thead>
+              <tbody>
+                {m.covariance.map((r, i) => (
+                  <tr key={i}>
+                    <th>{i === 0 ? 'SBER' : 'T'}</th>
+                    {r.map((v, j) => (
+                      <td key={j}>{fmt(v, 6)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="footnote">
+            Эффективные комбинации определяются проверкой доминирования: нет другого веса с меньшим
+            или равным риском и большей или равной доходностью при хотя бы одном строгом улучшении.
+            Доходность арифметическая, 12 × μ месяца; это оценка модели по истории. Предполагается
+            ежемесячное поддержание весов (ребалансировка) без издержек.
+          </p>
+        </Card>
+        <Card title="Все допустимые комбинации" subtitle="Выберите строку для изменения весов">
+          <div className="table-scroll compact-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>SBER</th>
+                  <th>T</th>
+                  <th>Доходность / год</th>
+                  <th>Риск / год</th>
+                  <th>Sharpe</th>
+                  <th>Эффективный</th>
+                </tr>
+              </thead>
+              <tbody>
+                {m.points.map((q) => (
+                  <tr key={q.weight} className={q.weight === p.weight ? 'selected-row' : ''}>
+                    <td>
+                      <button
+                        className="cell-button"
+                        onClick={() => {
+                          p.setMethod('manual');
+                          p.setWeight(q.weight);
+                        }}
+                      >
+                        {fmt(q.weight * 100, 0)}%
+                      </button>
+                    </td>
+                    <td>{fmt((1 - q.weight) * 100, 0)}%</td>
+                    <td>{pct(q.mean)}</td>
+                    <td>{pct(q.risk)}</td>
+                    <td>{fmt(q.sharpe, 2)}</td>
+                    <td>{q.efficient ? 'Да' : 'Нет'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </Card>
-        <Card
-          title="Портфель максимального Sharpe"
-          subtitle="Максимальная премия к риску при заданной Rf"
-        >
-          <div className="allocation">
-            <strong>
-              {fmt(m.max.weight * 100, 0)}
-              <small>% SBER</small>
-            </strong>
-            <span> / </span>
-            <strong>
-              {fmt((1 - m.max.weight) * 100, 0)}
-              <small>% T</small>
-            </strong>
-          </div>
-          <div className="triplet">
-            <div>
-              <span>Арифм. оценка / год</span>
-              <b>{pct(m.max.mean)}</b>
-            </div>
-            <div>
-              <span>Риск</span>
-              <b>{pct(m.max.risk)}</b>
-            </div>
-            <div>
-              <span>Sharpe</span>
-              <b>{fmt(m.max.sharpe, 2)}</b>
-            </div>
-          </div>
-        </Card>
-      </div>
-      <Notice>
-        Эффективная доходность и эффективный риск — характеристики конкретного портфеля на
-        эффективной границе. Максимум Sharpe учитывает премию доходности над Rf, а минимум дисперсии
-        учитывает только риск, поэтому их веса могут различаться.
-      </Notice>
-      <Card
-        title="Методика и ковариационная матрица"
-        subtitle="Годовой масштаб: месячная ковариационная матрица × 12"
-      >
-        <div className="formula-grid">
-          <code>E(Rp) = w × E(Rs) + (1 − w) × E(Rt)</code>
-          <code>σp² = w²σs² + (1 − w)²σt² + 2w(1 − w)Cov(s,t)</code>
-          <code>Sharpe = (μмесяца − Rfмесяца) / σмесяца × √12</code>
-        </div>
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Cov · год</th>
-                <th>SBER</th>
-                <th>T</th>
-              </tr>
-            </thead>
-            <tbody>
-              {m.covariance.map((r, i) => (
-                <tr key={i}>
-                  <th>{i === 0 ? 'SBER' : 'T'}</th>
-                  {r.map((v, j) => (
-                    <td key={j}>{fmt(v, 6)}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="footnote">
-          Эффективные комбинации определяются проверкой доминирования: нет другого веса с меньшим
-          или равным риском и большей или равной доходностью при хотя бы одном строгом улучшении.
-          Доходность арифметическая, 12 × μ месяца; это оценка модели по истории. Предполагается
-          ежемесячное поддержание весов (ребалансировка) без издержек.
-        </p>
-      </Card>
-      <Card title="Все допустимые комбинации" subtitle="Выберите строку для изменения весов">
-        <div className="table-scroll compact-table">
-          <table>
-            <thead>
-              <tr>
-                <th>SBER</th>
-                <th>T</th>
-                <th>Доходность / год</th>
-                <th>Риск / год</th>
-                <th>Sharpe</th>
-                <th>Эффективный</th>
-              </tr>
-            </thead>
-            <tbody>
-              {m.points.map((q) => (
-                <tr key={q.weight} className={q.weight === p.weight ? 'selected-row' : ''}>
-                  <td>
-                    <button
-                      className="cell-button"
-                      onClick={() => {
-                        p.setMethod('manual');
-                        p.setWeight(q.weight);
-                      }}
-                    >
-                      {fmt(q.weight * 100, 0)}%
-                    </button>
-                  </td>
-                  <td>{fmt((1 - q.weight) * 100, 0)}%</td>
-                  <td>{pct(q.mean)}</td>
-                  <td>{pct(q.risk)}</td>
-                  <td>{fmt(q.sharpe, 2)}</td>
-                  <td>{q.efficient ? 'Да' : 'Нет'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      </Disclosure>
     </>
   );
 }
 export function Calculator(p: PortfolioControls) {
-  const s = p.model.selected;
   const path = Array.from({ length: p.horizon * 4 + 1 }, (_, i) => ({
     year: i / 4,
     ...Object.fromEntries(p.model.results.map((r) => [r.id, compound(p.amount, r.return, i / 4)])),
@@ -360,8 +357,7 @@ export function Calculator(p: PortfolioControls) {
   return (
     <>
       <SectionIntro
-        eyebrow="ИНВЕСТИЦИОННЫЙ КАЛЬКУЛЯТОР"
-        title="От модели к вашему капиталу"
+        title="Калькулятор"
         description="Настройте сумму, распределение и горизонт. Сравните сценарные результаты в рублях."
       />
       <div className="portfolio-layout">
@@ -376,9 +372,7 @@ export function Calculator(p: PortfolioControls) {
             height={340}
           />
           <p className="footnote">
-            По горизонтали — лет от начала моделирования. Для горизонта более года механически
-            повторяется доходность сценария 2026: V = V₀ × (1 + R)^t. Это отдельное учебное
-            допущение, а не прогноз эмитентов на последующие годы.
+            Сценарные ставки повторяются со сложным процентом; это учебное допущение.
           </p>
         </Card>
         <Card title="Параметры инвестиций" action={<SlidersHorizontal size={17} />}>
@@ -401,10 +395,6 @@ export function Calculator(p: PortfolioControls) {
               <span>{rub(investmentLimits.min)}</span>
               <span>{rub(investmentLimits.max)}</span>
             </div>
-            <p className="footnote">
-              Шаг ползунка {rub(investmentLimits.step)}. Ручной ввод ниже сохраняет точную сумму;
-              положение ползунка округлено до шага.
-            </p>
           </div>
           <NumberField
             label="Сумма инвестиций"
@@ -458,26 +448,6 @@ export function Calculator(p: PortfolioControls) {
           </div>
         </Card>
       </div>
-      <div className="kpi-grid three">
-        <KPI
-          label="Арифметическая оценка / год"
-          hint={metricExplanation('arithmetic')}
-          value={pct(s?.mean)}
-          detail="Арифметическая, на общей месячной выборке"
-        />
-        <KPI
-          label="Историческая волатильность / год"
-          value={pct(s?.risk)}
-          detail="При выбранных весах"
-          color="gold"
-        />
-        <KPI
-          label="Коэффициент Шарпа"
-          value={fmt(s?.sharpe, 2)}
-          detail={`При учебной Rf ${pct(p.rf)}`}
-          color="blue"
-        />
-      </div>
       <div className="scenario-grid">
         {p.model.results.map((r) => {
           const v = compound(p.amount, r.return, p.horizon);
@@ -496,17 +466,17 @@ export function Calculator(p: PortfolioControls) {
           );
         })}
       </div>
-      <Card
-        title="Результат для вашего капитала"
-        subtitle="Пересчитывается при изменении суммы, весов и горизонта"
-      >
+      <Disclosure title="Подробнее">
+        <p className="footnote">
+          По горизонтали — лет от начала моделирования. Для горизонта более года механически
+          повторяется доходность сценария 2026: V = V₀ × (1 + R)^t. Это отдельное учебное допущение,
+          а не прогноз эмитентов на последующие годы.
+        </p>
         <p className="capital-conclusion">{p.model.conclusions.at(-1)}</p>
-      </Card>
-      <Notice tone="warn">
-        Историческая средняя не гарантирует будущую доходность. Сценарии — редактируемые допущения
-        EPS × P/E с условными дивидендами. Налоги, комиссии, лоты и инфляция не учитываются; дробные
-        доли разрешены.
-      </Notice>
+      </Disclosure>
+      <p className="footnote">
+        Сценарии — допущения EPS × P/E, без налогов и комиссий. Доходность не гарантирована.
+      </p>
       <a className="button" href="#forecast">
         Изменить сценарии 2026 <ArrowRight size={15} />
       </a>

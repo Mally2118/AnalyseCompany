@@ -3,7 +3,6 @@ import {
   Activity,
   ArrowDownToLine,
   ArrowUpRight,
-  BookOpen,
   ChartNoAxesCombined,
   ChevronDown,
   Database,
@@ -34,8 +33,7 @@ import { Forecast } from './pages/Forecast';
 import { Stability } from './pages/Stability';
 import { Sources } from './pages/Sources';
 import { exportCSV, exportPDF, exportXLSX } from './utils/export';
-import { Notice } from './components/ui';
-import { MetricGuide } from './components/MetricGuide';
+import { Notice, Hint } from './components/ui';
 import { date } from './utils/format';
 const pages = [
   { id: 'overview', label: 'Обзор', icon: LayoutDashboard },
@@ -188,7 +186,6 @@ function Dashboard({ data }: { data: DataSet }) {
           </span>
           <span>
             Invest<span className="brand-light">Analytics</span>
-            <small>ИНВЕСТИЦИОННЫЕ ИССЛЕДОВАНИЯ</small>
           </span>
         </a>
         <button
@@ -198,16 +195,6 @@ function Dashboard({ data }: { data: DataSet }) {
         >
           <X size={20} />
         </button>
-        <div className="workspace-label">
-          <span className="workspace-avatar">
-            <GraduationCap size={17} />
-          </span>
-          <div>
-            <strong>Исследовательский проект</strong>
-            <small>Бизнес-аналитика</small>
-          </div>
-        </div>
-        <span className="nav-label">АНАЛИТИЧЕСКАЯ ПЛАТФОРМА</span>
         <nav aria-label="Разделы исследования">
           {pages.map((p) => (
             <a
@@ -218,19 +205,10 @@ function Dashboard({ data }: { data: DataSet }) {
             >
               <p.icon size={18} />
               {p.label}
-              {p.id === 'forecast' && <span className="nav-pill">2026</span>}
             </a>
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="project-note">
-            <BookOpen size={18} />
-            <strong>Воспроизводимый анализ</strong>
-            <p>Реальные данные. Открытые формулы. Проверяемые выводы.</p>
-            <a href="#sources">
-              Изучить методологию <ArrowUpRight size={13} />
-            </a>
-          </div>
           <button
             className="theme-button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -239,10 +217,6 @@ function Dashboard({ data }: { data: DataSet }) {
             {theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
             <span>◐</span>
           </button>
-          <div className="sidebar-footer">
-            <span className="live-dot" />
-            Статический набор · без API
-          </div>
         </div>
       </aside>
       <div className="main-shell">
@@ -355,26 +329,20 @@ function Dashboard({ data }: { data: DataSet }) {
             </div>
             <span>
               {kind === 'price'
-                ? 'Без дивидендов и реинвестирования'
+                ? 'Без дивидендов'
                 : 'Условная реинвестиция в дату реестра · до налогов'}
             </span>
-            <span className="snapshot-label">Котировки на 30.12.2025</span>
           </div>
           {exportError && <Notice tone="warn">{exportError}</Notice>}
-          {model.period.limited && (
-            <Notice tone="warn">
-              Полная доходность T за 2021 не рассчитана: не подтверждён рублёвый курс USD-дивиденда.
-              Для обоих режимов и обеих акций используется общий период {date(model.period.from)} —{' '}
-              {date(model.period.till)} ({model.period.years.toFixed(2)} года). Пятилетний ценовой
-              результат показан отдельно.{' '}
-              <button className="text-button" onClick={() => setStart(2023)}>
-                Выбрать общий период 2023–2025
-              </button>
-            </Notice>
-          )}
           <p className="analysis-dates">
-            Фактическая база расчётов: {date(model.period.from)} — {date(model.period.till)} ·{' '}
-            {model.pair.rows.length} общих месячных интервалов
+            {date(model.period.from)} — {date(model.period.till)} · {model.pair.rows.length} общих
+            месяцев
+            {model.period.limited && (
+              <span className="period-warning">
+                Общий период сокращён{' '}
+                <Hint text="Полная доходность T за 2021 не рассчитана: не подтверждён рублёвый курс USD-дивиденда. Оба режима и обе акции используют одинаковые даты с конца 2021. Пятилетняя ценовая история доступна в разделе «Подробнее» обзора. Для короткой базы выберите 2023–2025." />
+              </span>
+            )}
           </p>
           {page === 'overview' && (
             <Overview data={data} model={model} mode={mode} navigate={navigate} />
@@ -396,7 +364,6 @@ function Dashboard({ data }: { data: DataSet }) {
           )}{' '}
           {page === 'stability' && <Stability data={data} model={model} mode={mode} />}{' '}
           {page === 'sources' && <Sources data={data} />}
-          <MetricGuide />
           <footer className="main-footer">
             <span>
               <ChartNoAxesCombined size={14} />

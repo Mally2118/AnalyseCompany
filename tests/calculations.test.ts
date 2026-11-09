@@ -32,6 +32,13 @@ const load = (name: string): unknown =>
 const financial = validateFinancial(load('financial')),
   market = validateMarket(load('market'));
 describe('Выборочная статистика и доходность', () => {
+  it.each([
+    { start: 100, end: 121, years: 2, expected: 0.1 },
+    { start: 100, end: 100, years: 5, expected: 0 },
+    { start: 100, end: 81, years: 2, expected: -0.1 },
+  ])('CAGR: $start → $end за $years лет = $expected', ({ start, end, years, expected }) => {
+    expect(cagr(start, end, years)).toBeCloseTo(expected, 12);
+  });
   it('использует дивиденд в числителе, нулевую и неполную цену не подменяет', () => {
     expect(periodicReturn(100, 110, 5)).toBeCloseTo(0.15);
     expect(periodicReturn(null, 100)).toBeNull();

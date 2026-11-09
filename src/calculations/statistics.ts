@@ -40,6 +40,10 @@ export function quantile(x: readonly number[], p: number): number {
     l = Math.floor(index);
   return s[l] + (s[Math.ceil(index)] - s[l]) * (index - l);
 }
+/** Geometric annual growth, as a decimal: (P1 / P0)^(1/n) - 1.
+ * Calendar market periods pass actual elapsed days / 365.25 as n.
+ * Format as percent at the presentation boundary; never substitute for Markowitz's 12 × mean.
+ */
 export function cagr(start: number, end: number, years: number): number | null {
   return Number.isFinite(start + end + years) && start > 0 && end > 0 && years > 0
     ? (end / start) ** (1 / years) - 1

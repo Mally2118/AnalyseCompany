@@ -1,5 +1,36 @@
-import type { ReactNode } from 'react';
-import { ArrowUpRight, Info } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { ChevronDown, Info } from 'lucide-react';
+export function Disclosure({
+  title,
+  children,
+  open,
+  onOpenChange,
+}: {
+  title: string;
+  children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = open ?? expanded;
+  return (
+    <details
+      className="disclosure"
+      open={visible}
+      onToggle={(event) => {
+        const next = event.currentTarget.open;
+        setExpanded(next);
+        onOpenChange?.(next);
+      }}
+    >
+      <summary>
+        {title}
+        <ChevronDown size={16} aria-hidden="true" />
+      </summary>
+      {visible && <div className="disclosure-body">{children}</div>}
+    </details>
+  );
+}
 export function Card({
   title,
   subtitle,
@@ -60,7 +91,7 @@ export function KPI({
           {label}
           {hint && <Hint text={hint} />}
         </span>
-        <span className={`kpi-icon ${color}`}>{icon ?? <ArrowUpRight size={18} />}</span>
+        {icon && <span className={`kpi-icon ${color}`}>{icon}</span>}
       </div>
       <div className="kpi-value">{value}</div>
       <div className="kpi-bottom">{detail}</div>
@@ -129,7 +160,7 @@ export function SectionIntro({
   description,
   children,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   children?: ReactNode;
@@ -137,7 +168,7 @@ export function SectionIntro({
   return (
     <div className="section-intro">
       <div>
-        <span className="eyebrow">{eyebrow}</span>
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         <h1>{title}</h1>
         <p>{description}</p>
       </div>

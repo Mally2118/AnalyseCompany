@@ -2089,3 +2089,166 @@ select {
 .portfolio-result > div > span {
   max-width: 65%;
 }
+
+/* Progressive disclosure keeps the presentation focused on results. */
+.disclosure {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin: 20px 0;
+}
+.disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 20px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--muted);
+}
+.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.disclosure > summary::marker {
+  content: '';
+}
+.disclosure > summary svg {
+  flex-shrink: 0;
+}
+.disclosure[open] > summary {
+  color: var(--text);
+}
+.disclosure[open] > summary svg {
+  transform: rotate(180deg);
+}
+.disclosure > summary:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 9px;
+}
+.disclosure-body {
+  padding: 4px 20px 20px;
+}
+.disclosure-body > .card {
+  background: transparent;
+  box-shadow: none;
+  padding: 16px 0;
+  border: 0;
+}
+.disclosure-body > p {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.disclosure-body > h3 {
+  margin-top: 20px;
+}
+.disclosure-body > h3:first-child {
+  margin-top: 0;
+}
+.card {
+  box-shadow: none;
+}
+.sidebar > nav {
+  margin-top: 42px;
+}
+.kpi {
+  overflow: visible;
+}
+.kpi-top {
+  min-height: 24px;
+}
+.kpi-value {
+  margin: 12px 0 8px;
+}
+.overview-status {
+  display: grid;
+  gap: 18px;
+}
+.overview-status strong {
+  font-size: 12px;
+  font-weight: 550;
+}
+.overview-status p {
+  font-size: 12px;
+  margin-top: 6px;
+}
+.overview-status small {
+  color: var(--muted);
+  font-size: 10px;
+  display: block;
+  margin-top: 5px;
+}
+.card > .compact-insight {
+  margin: 20px 0 10px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.period-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+}
+.sources-summary,
+.forecast-capital {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 22px;
+  line-height: 1.8;
+}
+.scenario-security + .scenario-security {
+  margin-top: 22px;
+}
+.scenario-security > .mini-company {
+  margin-bottom: 4px;
+}
+.scenario-total > strong {
+  color: var(--text);
+}
+.scenario-card > .disclosure {
+  margin-bottom: 0;
+}
+.scenario-card .disclosure > summary {
+  padding: 14px 12px;
+  font-size: 11px;
+}
+.scenario-card .disclosure-body {
+  padding: 0 12px 14px;
+}
+.scenario-card .scenario-inputs {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+@media (max-width: 980px) {
+  .card-head {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 760px) {
+  .disclosure > summary {
+    padding: 15px;
+    min-height: 46px;
+  }
+  .disclosure-body {
+    padding: 0 15px 15px;
+  }
+  .period-warning {
+    margin-left: 0;
+    display: flex;
+  }
+  .overview-status {
+    gap: 16px;
+  }
+  .kpi-grid.three .kpi > small {
+    grid-column: 1/-1;
+    margin-top: 8px;
+  }
+}
+@media (max-width: 980px) {
+  .scenario-card .scenario-inputs {
+    display: block;
+  }
+}

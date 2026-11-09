@@ -4,7 +4,7 @@ import { ExternalLink } from 'lucide-react';
 import type { Company, Metric, Mode } from '../data/types';
 import { companies, metrics, years } from '../data/types';
 import type { DataSet } from '../services/data';
-import { Card, Hint, Notice, SectionIntro } from '../components/ui';
+import { Card, Disclosure, Hint, SectionIntro } from '../components/ui';
 import { TimeChart } from '../charts/Charts';
 import { fact } from '../calculations/analysis';
 import { growth } from '../calculations/statistics';
@@ -34,25 +34,113 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
         color: i === 0 ? companies[c].color : c === 'SBER' ? '#8ce6b7' : '#b1a0ff',
       })),
     );
-  const rows = Object.keys(metrics) as Metric[];
+  const allRows = Object.keys(metrics) as Metric[];
+  const rows: Metric[] = ['profit', 'assets', 'equity', 'roe', 'roa'];
+  const [showReport, setShowReport] = useState(false);
+  const metricTable = (items: Metric[]) => (
+    <>
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Показатель</th>
+              {mode === 'compare' && <th>Компания</th>}
+              {years.map((y) => (
+                <th key={y}>{y}</th>
+              ))}
+              <th>CAGR 2021–25</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.flatMap((m) =>
+              cs.map((c) => {
+                const facts = years.map((y) =>
+                  data.financial.facts.find(
+                    (f) => f.company === c && f.year === y && f.metric === m,
+                  ),
+                );
+                const comparable = facts.every(
+                  (f) => f?.comparable && f.value !== null && f.value > 0,
+                );
+                return (
+                  <tr key={c + m}>
+                    <th>
+                      <span className="metric-label">
+                        {metrics[m].label}{' '}
+                        <Hint text={`${metrics[m].definition} Формула: ${metrics[m].formula}`} />
+                      </span>
+                      <small>
+                        {view === 'growth'
+                          ? metrics[m].unit === '%'
+                            ? 'п.п.'
+                            : '%'
+                          : metrics[m].unit}
+                      </small>
+                    </th>
+                    {mode === 'compare' && (
+                      <td>
+                        <span className="company-dot" style={{ background: companies[c].color }} />
+                        {c}
+                      </td>
+                    )}
+                    {years.map((y, i) => {
+                      const f = facts[i],
+                        v = f?.value ?? null,
+                        previous = fact(data.financial, c, y - 1, m),
+                        g =
+                          metrics[m].unit === '%'
+                            ? v !== null && previous !== null
+                              ? v - previous
+                              : null
+                            : growth(previous, v);
+                      return (
+                        <td key={y}>
+                          <button
+                            className="cell-button"
+                            onClick={() => {
+                              setSelected(m);
+                              setShowReport(true);
+                            }}
+                            title={`${f?.note ?? ''} ${f?.section ?? ''}`}
+                          >
+                            {view === 'values'
+                              ? fmt(v, m === 'eps' || m === 'dividend' ? 2 : 1)
+                              : metrics[m].unit === '%'
+                                ? `${fmt(g)}${g !== null ? ' п.п.' : ''}`
+                                : pct(g)}
+                          </button>
+                        </td>
+                      );
+                    })}
+                    <td>
+                      {metrics[m].unit === '%' || !comparable
+                        ? '—'
+                        : pct(comparableCagr(data.financial, c, m))}
+                    </td>
+                  </tr>
+                );
+              }),
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p className="footnote">
+        CAGR = (конечное / начальное)^(1/4) − 1; показан только для положительных сопоставимых
+        рядов. «—» означает неприменимость. «Нет данных» — отсутствие проверенного значения. Г/г —
+        механическое изменение опубликованных значений; при пересмотре или M&A его нельзя считать
+        органическим ростом.
+      </p>
+    </>
+  );
   return (
     <>
       <SectionIntro
-        eyebrow="ФУНДАМЕНТАЛЬНЫЙ АНАЛИЗ"
-        title="Финансовый профиль"
-        description="Пять лет консолидированной отчётности. Каждый показатель связан с источником и методикой."
+        title="Финансовый анализ"
+        description="Основные результаты МСФО за 2021–2025 годы."
       />
-      <Notice>
-        МСФО и пресс-релизы на основе МСФО отмечены раздельно. Рост Т в 2024 году включает
-        приобретение Росбанка. Обобщённая отчётность Сбера и изменения МСФО 17 ограничивают
-        сопоставимость; балансовый капитал не равен регуляторному.
-      </Notice>
       <div className="grid-two">
         <Card title="Чистая прибыль" subtitle="Млрд ₽ · прибыль всей группы">
           <TimeChart data={chart(['profit'])} series={series(['profit'])} kind="bar" xKey="year" />
-        </Card>
-        <Card title="Собственный капитал" subtitle="Млрд ₽ · на конец года">
-          <TimeChart data={chart(['equity'])} series={series(['equity'])} kind="area" xKey="year" />
         </Card>
         <Card
           title="Рентабельность"
@@ -65,19 +153,11 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
             xKey="year"
           />
           <p className="footnote">
-            ROA здесь = прибыль группы / среднее активов на начало и конец года × 100%. Отличается
-            от опубликованной ROA на среднемесячных остатках; за 2021 нет начального баланса в
-            наборе. В таблице ниже сохранена только раскрытая ROA.
+            ROA — расчёт по среднему годовому балансу, не раскрытая ROA.{' '}
+            <Hint text="ROA = прибыль группы / среднее активов на начало и конец года × 100%. Отличается от опубликованной ROA на среднемесячных остатках; за 2021 нет начального баланса." />
           </p>
         </Card>
-        <Card
-          title="Структура банковского дохода"
-          subtitle="Чистый процентный и комиссионный доход, млрд ₽"
-        >
-          <TimeChart data={chart(['nii', 'fees'])} series={series(['nii', 'fees'])} xKey="year" />
-        </Card>
       </div>
-      <ValuationHistory data={data} mode={mode} />
       <Card
         title="Финансовые показатели"
         subtitle="Нажмите на значение, чтобы проверить источник"
@@ -92,106 +172,41 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
           </div>
         }
       >
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Показатель</th>
-                {mode === 'compare' && <th>Компания</th>}
-                {years.map((y) => (
-                  <th key={y}>{y}</th>
-                ))}
-                <th>CAGR 2021–25</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.flatMap((m) =>
-                cs.map((c) => {
-                  const facts = years.map((y) =>
-                    data.financial.facts.find(
-                      (f) => f.company === c && f.year === y && f.metric === m,
-                    ),
-                  );
-                  const comparable = facts.every(
-                    (f) => f?.comparable && f.value !== null && f.value > 0,
-                  );
-                  return (
-                    <tr key={c + m}>
-                      <th>
-                        <span className="metric-label">
-                          {metrics[m].label}{' '}
-                          <Hint text={`${metrics[m].definition} Формула: ${metrics[m].formula}`} />
-                        </span>
-                        <small>
-                          {view === 'growth'
-                            ? metrics[m].unit === '%'
-                              ? 'п.п.'
-                              : '%'
-                            : metrics[m].unit}
-                        </small>
-                      </th>
-                      {mode === 'compare' && (
-                        <td>
-                          <span
-                            className="company-dot"
-                            style={{ background: companies[c].color }}
-                          />
-                          {c}
-                        </td>
-                      )}
-                      {years.map((y, i) => {
-                        const f = facts[i],
-                          v = f?.value ?? null,
-                          previous = fact(data.financial, c, y - 1, m),
-                          g =
-                            metrics[m].unit === '%'
-                              ? v !== null && previous !== null
-                                ? v - previous
-                                : null
-                              : growth(previous, v);
-                        return (
-                          <td key={y}>
-                            <button
-                              className="cell-button"
-                              onClick={() => setSelected(m)}
-                              title={`${f?.note ?? ''} ${f?.section ?? ''}`}
-                            >
-                              {view === 'values'
-                                ? fmt(v, m === 'eps' || m === 'dividend' ? 2 : 1)
-                                : metrics[m].unit === '%'
-                                  ? `${fmt(g)}${g !== null ? ' п.п.' : ''}`
-                                  : pct(g)}
-                            </button>
-                          </td>
-                        );
-                      })}
-                      <td>
-                        {metrics[m].unit === '%' || !comparable
-                          ? '—'
-                          : pct(comparableCagr(data.financial, c, m))}
-                      </td>
-                    </tr>
-                  );
-                }),
-              )}
-            </tbody>
-          </table>
-        </div>
-        <p className="footnote">
-          CAGR = (конечное / начальное)^(1/4) − 1; показан только для положительных сопоставимых
-          рядов. «—» означает неприменимость. «Нет данных» — отсутствие проверенного значения. Г/г —
-          механическое изменение опубликованных значений; при пересмотре или M&A его нельзя считать
-          органическим ростом.
-        </p>
+        {metricTable(rows)}
       </Card>
-      <Card
-        title={`Паспорт показателя: ${metrics[selected].label}`}
-        subtitle={`${metrics[selected].definition} ${metrics[selected].formula}`}
-      >
+      <Disclosure title="Дополнительные показатели">
+        <div className="grid-two">
+          {' '}
+          <Card title="Собственный капитал" subtitle="Млрд ₽ · на конец года">
+            <TimeChart
+              data={chart(['equity'])}
+              series={series(['equity'])}
+              kind="area"
+              xKey="year"
+            />
+          </Card>
+          <Card
+            title="Структура банковского дохода"
+            subtitle="Чистый процентный и комиссионный доход, млрд ₽"
+          >
+            <TimeChart data={chart(['nii', 'fees'])} series={series(['nii', 'fees'])} xKey="year" />
+          </Card>
+        </div>
+        {metricTable(allRows.filter((m) => !rows.includes(m)))}
+        <ValuationHistory data={data} mode={mode} />
+      </Disclosure>
+      <Disclosure title="Подробная отчётность" open={showReport} onOpenChange={setShowReport}>
+        <p className="footnote">
+          Периметр T в 2024 включает Росбанк. Обобщённая отчётность Сбера и изменения МСФО 17
+          ограничивают сопоставимость; источники МСФО и пресс-релизы отмечены раздельно.
+        </p>
+        <p className="footnote">
+          {metrics[selected].definition} {metrics[selected].formula}
+        </p>
         <label className="field inline-field">
           <span>Показатель</span>
           <select value={selected} onChange={(e) => setSelected(e.target.value as Metric)}>
-            {rows.map((m) => (
+            {allRows.map((m) => (
               <option key={m} value={m}>
                 {metrics[m].label}
               </option>
@@ -238,7 +253,7 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
             </tbody>
           </table>
         </div>
-      </Card>
+      </Disclosure>
     </>
   );
 }

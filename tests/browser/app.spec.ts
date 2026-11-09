@@ -5,7 +5,7 @@ test('режимы компаний, восемь страниц и измене
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('./');
-  await expect(page.getByRole('heading', { name: 'За цифрами — решения.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Обзор' })).toBeVisible();
   await expect(page.locator('.kpi-value').first()).toContainText('705,9');
   await page.getByRole('button', { name: 'Т-Технологии', exact: true }).click();
   await expect(page.locator('.kpi-value').first()).toContainText('192,4');
@@ -13,7 +13,8 @@ test('режимы компаний, восемь страниц и измене
   await expect(page.locator('.kpi-value').first()).toContainText('705,9');
   await page.getByRole('button', { name: 'Сравнение', exact: true }).click();
   await page.locator('nav').getByRole('link', { name: 'Финансовый анализ' }).click();
-  await expect(page.getByRole('heading', { name: 'Финансовый профиль' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Финансовый анализ' })).toBeVisible();
+  await expect(page.locator('.chart')).toHaveCount(2);
   await page.getByRole('button', { name: 'Изменение г/г' }).click();
   await expect(
     page
@@ -29,6 +30,7 @@ test('режимы компаний, восемь страниц и измене
       .locator('table'),
   ).toContainText('287,8');
   await page.locator('nav').getByRole('link', { name: 'Доходность и риск' }).click();
+  await page.getByText('Подробнее', { exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Сравнение инвестиционных характеристик' }),
   ).toBeVisible();
@@ -42,38 +44,44 @@ test('режимы компаний, восемь страниц и измене
   const initial = await page.locator('.portfolio-result').innerText();
   await slider.fill('100');
   expect(await page.locator('.portfolio-result').innerText()).not.toBe(initial);
-  await page.getByRole('button', { name: 'Выбрать минимальный риск' }).click();
+  await page.getByRole('button', { name: 'Минимальный риск', exact: true }).click();
   await expect(slider).toHaveValue('66');
-  await page.getByRole('button', { name: 'Найти оптимальный портфель' }).click();
+  await page.getByRole('button', { name: 'Максимальный Шарп' }).click();
   await expect(slider).toHaveValue('100');
   await page.getByRole('button', { name: 'С дивидендами', exact: true }).click();
-  await expect(
-    page.getByText('Полная доходность T за 2021 не рассчитана:', { exact: false }),
-  ).toBeVisible();
+  await expect(page.locator('.analysis-dates')).toContainText('Общий период сокращён');
   await expect(slider).toHaveValue('100');
   await page.getByLabel('Рыночный период').selectOption('2023');
-  await expect(page.locator('main')).not.toContainText(
-    'Полная доходность T за 2021 не рассчитана:',
-  );
+  await expect(page.locator('.analysis-dates')).not.toContainText('Общий период сокращён');
   await page.locator('nav').getByRole('link', { name: 'Калькулятор', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'От модели к вашему капиталу' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Калькулятор' })).toBeVisible();
   const old = await page.locator('.scenario-value').allTextContents();
   await page.getByLabel('Сумма инвестиций', { exact: true }).fill('250000');
   expect(await page.locator('.scenario-value').allTextContents()).not.toEqual(old);
   await page.getByLabel('Инвестиционный горизонт').fill('3');
   await expect(page.locator('.scenario-grid')).toContainText('3 лет');
   await page.locator('nav').getByRole('link', { name: 'Прогноз 2026' }).click();
-  await expect(page.getByRole('heading', { name: 'Прогноз и инвестиционный вывод' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Прогноз 2026' })).toBeVisible();
+  await expect(page.getByLabel('Изменение EPS', { exact: true })).toHaveCount(0);
+  await page.getByText('Настроить сценарий', { exact: true }).first().click();
   const price = await page.locator('.scenario-security').first().innerText();
   await page.getByLabel('Изменение EPS', { exact: true }).first().fill('40');
   expect(await page.locator('.scenario-security').first().innerText()).not.toBe(price);
   await page.getByRole('button', { name: 'Сбросить допущения' }).click();
   await expect(page.getByLabel('Изменение EPS', { exact: true }).first()).toHaveValue('-15');
   await page.locator('nav').getByRole('link', { name: 'Устойчивость', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Устойчивость', exact: true })).toBeVisible();
+  await expect(page.getByText('Шесть критериев', { exact: true })).toHaveCount(2);
+  await expect(page.locator('.signal-list')).toHaveCount(0);
+  for (const summary of await page.getByText('Шесть критериев', { exact: true }).all())
+    await summary.click();
   await expect(page.locator('.signal-list')).toHaveCount(2);
   await expect(page.locator('main')).toContainText('Относительно устойчивое');
   await page.locator('nav').getByRole('link', { name: 'Данные и источники' }).click();
-  await expect(page.getByRole('heading', { name: 'От документа до результата' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Данные и источники' })).toBeVisible();
+  await expect(page.locator('table')).toHaveCount(0);
+  await page.getByText('Финансовая отчётность', { exact: true }).click();
+  await page.getByText('Показать исходную таблицу', { exact: true }).click();
   await page.getByLabel('Компания', { exact: true }).selectOption('T');
   await page.getByLabel('Год', { exact: true }).selectOption('2025');
   await expect(page.locator('tbody tr')).toHaveCount(13);
@@ -81,7 +89,7 @@ test('режимы компаний, восемь страниц и измене
 });
 test('XLSX, CSV и печатный PDF содержат данные', async ({ page }, testInfo) => {
   await page.goto('./');
-  await expect(page.getByRole('heading', { name: 'За цифрами — решения.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Обзор' })).toBeVisible();
   await page.getByRole('button', { name: 'Экспорт отчёта' }).click();
   const csvPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'CSV — исходные финансы', exact: false }).click();
@@ -123,6 +131,7 @@ test('XLSX, CSV и печатный PDF содержат данные', async ({
 test('CAGR сравнивается на общих датах, P/E сохраняет пропуски и источники', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Т-Технологии', exact: true }).click();
+  await page.getByText('Подробнее', { exact: true }).click();
   const price = page.getByTestId('cagr-price-T'),
     total = page.getByTestId('cagr-total-T');
   await expect(price).toContainText('14,43');
@@ -137,6 +146,7 @@ test('CAGR сравнивается на общих датах, P/E сохран
   await expect(total).toContainText('11,49');
   await expect(page.locator('.analysis-dates')).toContainText('30.12.2022');
   await page.locator('nav').getByRole('link', { name: 'Финансовый анализ' }).click();
+  await page.getByText('Дополнительные показатели', { exact: true }).click();
   const pe = page
     .locator('.card')
     .filter({ has: page.getByRole('heading', { name: 'Исторический P/E', exact: true }) });
@@ -153,6 +163,7 @@ test('CAGR сравнивается на общих датах, P/E сохран
 });
 test('оба ползунка, точный ручной ввод и рублёвый вывод синхронизированы', async ({ page }) => {
   await page.goto('./#calculator');
+  await page.getByText('Подробнее', { exact: true }).click();
   const slider = page.getByRole('slider', { name: 'Сумма инвестиций — ползунок' });
   const input = page.getByLabel('Сумма инвестиций', { exact: true });
   await expect(input).toHaveValue('100000');
@@ -186,7 +197,7 @@ test('оба ползунка, точный ручной ввод и рублё�
 test('адаптивность, светлая тема и навигация телефона', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('./');
-  await expect(page.getByRole('heading', { name: 'За цифрами — решения.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Обзор' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
@@ -194,7 +205,7 @@ test('адаптивность, светлая тема и навигация т
   await page.getByRole('button', { name: 'Светлая тема' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.locator('nav').getByRole('link', { name: 'Портфель Марковица' }).click();
-  await expect(page.getByRole('heading', { name: 'Портфель, который имеет смысл' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Портфель Марковица' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
@@ -209,7 +220,7 @@ test('production работает в произвольном подкатало
     if (r.status() >= 400 && r.url().startsWith('http://127.0.0.1:4174')) missing.push(r.url());
   });
   await page.goto('./#sources');
-  await expect(page.getByRole('heading', { name: 'От документа до результата' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Данные и источники' })).toBeVisible();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
     if (!navigator.serviceWorker.controller)
@@ -221,9 +232,53 @@ test('production работает в произвольном подкатало
   });
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'От документа до результата' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Данные и источники' })).toBeVisible();
   await page.locator('nav').getByRole('link', { name: 'Обзор', exact: true }).click();
   await expect(page.locator('.kpi-value').first()).toContainText('705,9');
   expect(missing).toEqual([]);
   await context.setOffline(false);
+});
+
+test('компактные страницы, основной CAGR и подробные расчёты', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.locator('.kpi')).toHaveCount(3);
+  await expect(page.locator('.chart')).toHaveCount(1);
+  await expect(page.locator('table')).toHaveCount(0);
+  const cagr = page.locator('.kpi').filter({ hasText: 'Среднегодовая доходность (CAGR)' });
+  await expect(cagr.getByRole('note')).toHaveAttribute('title', /P₀.*P₁.*365,25/);
+  const cases = [
+    { company: 'Сбербанк', period: '2021', kind: 'Ценовая доходность', value: '0,54%' },
+    { company: 'Т-Технологии', period: '2021', kind: 'Ценовая доходность', value: '-14,43%' },
+    { company: 'Т-Технологии', period: '2021', kind: 'С дивидендами', value: '-12,91%' },
+    { company: 'Т-Технологии', period: '2023', kind: 'С дивидендами', value: '11,49%' },
+    { company: 'Т-Технологии', period: '2023', kind: 'Ценовая доходность', value: '8,89%' },
+    { company: 'Сбербанк', period: '2023', kind: 'Ценовая доходность', value: '28,55%' },
+    { company: 'Сбербанк', period: '2023', kind: 'С дивидендами', value: '42,87%' },
+  ];
+  for (const c of cases) {
+    await page.getByRole('button', { name: c.company, exact: true }).click();
+    await page.getByLabel('Рыночный период').selectOption(c.period);
+    await page.getByRole('button', { name: c.kind, exact: true }).click();
+    await expect(cagr.locator('.kpi-value')).toHaveText(c.value);
+  }
+  await page.locator('nav').getByRole('link', { name: 'Доходность и риск' }).click();
+  await expect(page.locator('.kpi')).toHaveCount(4);
+  await expect(page.locator('.chart')).toHaveCount(2);
+  await expect(page.getByRole('heading', { name: 'Просадка', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Доходность', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Месячная доходность', exact: true }),
+  ).toBeVisible();
+  await page.locator('nav').getByRole('link', { name: 'Портфель Марковица' }).click();
+  await expect(page.locator('table')).toHaveCount(0);
+  const details = page.getByText('Методика и подробные расчёты', { exact: true });
+  await details.focus();
+  await page.keyboard.press('Enter');
+  const combinations = page
+    .locator('.card')
+    .filter({ has: page.getByRole('heading', { name: 'Все допустимые комбинации' }) });
+  await expect(combinations.locator('tbody tr')).toHaveCount(101);
+  await expect(page.getByLabel('Безрисковая ставка, годовых')).toBeVisible();
+  await details.click();
+  await expect(page.locator('table')).toHaveCount(0);
 });
