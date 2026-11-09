@@ -1,3 +1,4 @@
+import { MetricHelp } from '../components/MetricHelp';
 import { Check, Minus, ShieldCheck, TriangleAlert } from 'lucide-react';
 import type { Company, Mode } from '../data/types';
 import { companies } from '../data/types';
@@ -34,7 +35,9 @@ export function Stability({
                 <Tag>{a.score ?? '—'} / 6</Tag>
               </div>
               <div className="market-risk-panel">
-                <span>Риск рыночной инвестиции</span>
+                <span>
+                  Риск рыночной инвестиции <MetricHelp metric="volatility" />
+                </span>
                 <Tag color={marketRisk(s) === 'Высокий' ? 'red' : 'gold'}>{marketRisk(s)}</Tag>
                 <p>
                   Годовая волатильность {pct(s?.annualVol)} · максимальная дневная просадка{' '}
@@ -59,13 +62,28 @@ export function Stability({
                           <TriangleAlert size={16} />
                         )}
                       </span>
-                      <span>{q.label}</span>
+                      <span>
+                        {q.label}{' '}
+                        <MetricHelp
+                          metric={
+                            q.label.includes('ROE')
+                              ? 'roe'
+                              : q.label.includes('NPL')
+                                ? 'npl'
+                                : q.label.includes('Общий капитал')
+                                  ? 'capital'
+                                  : q.label.includes('Капитал')
+                                    ? 'equity'
+                                    : 'profit'
+                          }
+                        />
+                      </span>
                       <strong>{q.value}</strong>
                     </div>
                   ))}
                 </div>
                 <p className="footnote">
-                  CoR: {fmt(fact(data.financial, c, 2024, 'cor'))}% →{' '}
+                  CoR <MetricHelp metric="cor" />: {fmt(fact(data.financial, c, 2024, 'cor'))}% →{' '}
                   {fmt(fact(data.financial, c, 2025, 'cor'))}%; ROE:{' '}
                   {fmt(fact(data.financial, c, 2024, 'roe'))}% →{' '}
                   {fmt(fact(data.financial, c, 2025, 'roe'))}%.{' '}

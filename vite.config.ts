@@ -5,6 +5,8 @@ export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss()],
   build: {
-    rollupOptions: { output: { manualChunks: { charts: ['recharts'], validation: ['zod'] } } },
+    rollupOptions: {
+      output: { manualChunks: { charts: ['recharts'], validation: ['zod'], math: ['katex'] } },
+    },
   },
 });

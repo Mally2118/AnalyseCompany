@@ -1,8 +1,10 @@
+import { IndicatorSummary } from '../components/IndicatorSummary';
+import { MetricHelp } from '../components/MetricHelp';
 import type { Mode, Company } from '../data/types';
 import { companies } from '../data/types';
 import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
-import { Card, Disclosure, KPI, SectionIntro, Hint } from '../components/ui';
+import { Card, Disclosure, KPI, SectionIntro } from '../components/ui';
 import { TimeChart, companySeries } from '../charts/Charts';
 import { fact, marketRisk, stability } from '../calculations/analysis';
 import { metricExplanation } from '../data/metric-help';
@@ -92,6 +94,9 @@ export function Overview({
           </button>
         </Card>
       </div>
+      <Disclosure title="Сводка показателей">
+        <IndicatorSummary data={data} model={model} mode={mode} />
+      </Disclosure>
       <Disclosure title="Подробнее">
         <h3>Сопоставимые доходности</h3>
         <div className="table-scroll">
@@ -100,7 +105,7 @@ export function Overview({
               <tr>
                 <th>Акция</th>
                 <th>
-                  Ценовой CAGR <Hint text={metricExplanation('cagr')} />
+                  Ценовой CAGR <MetricHelp metric="cagr" />
                 </th>
                 <th>С дивидендами</th>
                 <th>Ценовой CAGR 2021–2025</th>
@@ -123,7 +128,9 @@ export function Overview({
           {fmt(model.period.years, 4)} года. Полный пятилетний дивидендный ряд T отсутствует.
           Реинвестирование условно выполняется в дату реестра, без налогов и комиссий.
         </p>
-        <h3>Исторический P/E · 2025</h3>
+        <h3>
+          Исторический P/E · 2025 <MetricHelp metric="pe" />
+        </h3>
         {model.valuations
           .filter((v) => v.year === 2025 && cs.includes(v.company))
           .map((v) => (

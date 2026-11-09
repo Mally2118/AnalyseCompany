@@ -1,9 +1,11 @@
+import { MetricHelp } from '../components/MetricHelp';
+import { metricForLabel } from '../data/metric-help';
 import { useState } from 'react';
 import type { Company, Mode } from '../data/types';
 import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
 import { companies } from '../data/types';
-import { Card, Disclosure, Hint, KPI, Notice, SectionIntro } from '../components/ui';
+import { Card, Disclosure, KPI, Notice, SectionIntro } from '../components/ui';
 import { TimeChart, RiskScatter, companySeries } from '../charts/Charts';
 import { drawdowns, stdev } from '../calculations/statistics';
 import { metricExplanation } from '../data/metric-help';
@@ -216,12 +218,23 @@ export function Risk({ data, model, mode }: { data: DataSet; model: AnalysisMode
                     'var95',
                     'Исторический метод: отрицательный 5%-квантиль (линейная интерполяция), минимум 24 наблюдения. VaR не ограничивает возможные потери.',
                   ],
-                ].map(([label, key, hint]) => (
+                ].map(([label, key]) => (
                   <tr key={key}>
                     <th>
                       <span className="metric-label">
                         {label}
-                        <Hint text={hint} />
+                        <MetricHelp
+                          metric={
+                            metricForLabel(label) ??
+                            (key === 'monthlyMean'
+                              ? 'arithmetic'
+                              : key === 'annualMean'
+                                ? 'arithmetic'
+                                : key === 'monthlyVol'
+                                  ? 'volatility'
+                                  : 'var')
+                          }
+                        />
                       </span>
                     </th>
                     {cs.map((c) => (

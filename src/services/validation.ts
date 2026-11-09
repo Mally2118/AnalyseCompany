@@ -48,6 +48,17 @@ export const financialSchema = z.object({
       section: z.string(),
       note: z.string(),
       comparable: z.boolean(),
+      status: z.enum(['actual', 'calculated', 'estimated', 'missing']),
+      provenance: z
+        .object({
+          method: z.string(),
+          formula: z.string(),
+          inputs: z.array(
+            z.object({ label: z.string(), value: number, unit: z.string(), sourceId: z.string() }),
+          ),
+          limitations: z.string(),
+        })
+        .optional(),
     }),
   ),
 });
@@ -86,6 +97,11 @@ export function validateFinancial(input: unknown): FinancialData {
     if (seen.has(key) || !ids.has(f.sourceId))
       throw new Error(`Дубликат или неизвестный источник ${key}`);
     if (f.unit !== metrics[f.metric].unit) throw new Error(`Неверная единица ${key}`);
+    if ((f.value === null) !== (f.status === 'missing')) throw new Error(`Неверный статус ${key}`);
+    if (['calculated', 'estimated'].includes(f.status) && !f.provenance)
+      throw new Error(`Нет метода ${key}`);
+    if (f.provenance?.inputs.some((x) => !ids.has(x.sourceId)))
+      throw new Error(`Нет источника расчёта ${key}`);
     seen.add(key);
   }
   for (const c of ['SBER', 'T'])

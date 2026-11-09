@@ -3,10 +3,13 @@ import type { Company, ReturnKind, Scenario } from '../data/types';
 import { analysisPeriod, elapsedYears } from './period';
 import { monthlyReturns, paired, statistics, wealthSeries } from './market';
 import { frontier, portfolioWealth } from './portfolio';
-import { cagr, correlation, compound } from './statistics';
+import { cagr, correlation } from './statistics';
 import { fact, conclusions } from './analysis';
 import { scenarioResult } from './scenarios';
 import { historicalValuations } from './valuation';
+import { project, type DividendMode, type ProjectionPlans } from './projection';
+import { statistics as portfolioStatistics } from './market';
+import { portfolioReturns } from './portfolio';
 import { allocation } from './calculator';
 import { pct, rub } from '../utils/format';
 const securities: Company[] = ['SBER', 'T'];
@@ -46,6 +49,8 @@ export function createResearchModel(
   amount: number,
   scenarios: Scenario[],
   horizon = 1,
+  dividendMode: DividendMode = 'reinvest',
+  plans?: ProjectionPlans,
 ) {
   const analysis = marketResearch(data, kind, start, rf),
     { period, model, stats, wealth } = analysis;
@@ -138,13 +143,33 @@ export function createResearchModel(
           ),
         )
       : [];
+  const projections =
+    eps.SBER && eps.T && last.SBER && last.T
+      ? scenarios.map((s) =>
+          project(
+            s,
+            { SBER: eps.SBER!, T: eps.T! },
+            { SBER: last.SBER!, T: last.T! },
+            weight,
+            amount,
+            horizon,
+            dividendMode,
+            plans,
+          ),
+        )
+      : [];
+  const portfolioStats = portfolioStatistics(
+    portfolioReturns(analysis.pair.SBER, analysis.pair.T, weight),
+    rf,
+    historical.selected.series,
+  );
   const capital = allocation(amount, weight);
   const summary = conclusions(data.financial, stats, model, { sameHorizon: true });
   summary.push(
     `Общая временная база: ${period.from} — ${period.till}. CAGR выбранного портфеля ${pct(historical.selected.cagr)}; оценка Марковица ${pct(model?.points[Math.round(weight * 100)]?.mean)} — арифметическая по ${analysis.pair.rows.length} общим месяцам.`,
   );
   summary.push(
-    `Капитал ${rub(amount)}: Сбер ${rub(capital.SBER)}, Т ${rub(capital.T)}. Результаты при горизонте ${horizon} лет: ${results.map((r) => `${r.name.toLowerCase()} — ${rub(compound(amount, r.return, horizon))}, прибыль/убыток ${rub(compound(amount, r.return, horizon) - amount)}`).join('; ')}. При горизонте более года ставка сценария повторяется как учебное допущение.`,
+    `Капитал ${rub(amount)}: Сбер ${rub(capital.SBER)}, Т ${rub(capital.T)}. Результаты при горизонте ${horizon} лет: ${projections.map((r) => `${r.name.toLowerCase()} — ${rub(r.value)}, прибыль/убыток ${rub(r.profit)}, CAGR ${pct(r.cagr)}`).join('; ')}. Годовые EPS, P/E и дивиденды рассчитываются раздельно; доходность первого года не повторяется.`,
   );
   return {
     ...analysis,
@@ -156,6 +181,10 @@ export function createResearchModel(
     allocation: capital,
     selected: model?.points[Math.round(weight * 100)] ?? null,
     results,
+    projections,
+    portfolioStats,
+    dividendMode,
+    plans,
     conclusions: summary,
     eps,
   };

@@ -1,3 +1,5 @@
+import katex from 'katex';
+import { calculatedROA, statusLabels } from '../calculations/data-records';
 import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
 import type { Company, ReturnKind, Scenario } from '../data/types';
@@ -51,19 +53,34 @@ export function financialCSVRows(ctx: ExportContext) {
       'Раздел',
       'Стандарт',
       'Примечание',
+      'Тип данных',
+      'Метод',
+      'Исходные данные',
+      'Ограничения',
     ],
-    ...ctx.data.financial.facts.map((f) => {
+    ...[
+      ...ctx.data.financial.facts,
+      ...(['SBER', 'T'] as Company[]).flatMap((c) =>
+        years.map((y) => calculatedROA(ctx.data.financial, c, y)).filter((f) => f.value !== null),
+      ),
+    ].map((f) => {
       const s = sources.find((s) => s.id === f.sourceId);
       return [
         companies[f.company].name,
         f.year,
-        metrics[f.metric].label,
+        f.status === 'calculated' && f.metric === 'roa'
+          ? 'Расчётная ROA по средним годовым активам'
+          : metrics[f.metric].label,
         f.value,
         f.unit,
         s?.url,
         f.section,
         s?.standard,
         f.note,
+        statusLabels[f.status],
+        f.provenance?.method ?? '',
+        JSON.stringify(f.provenance?.inputs ?? []),
+        f.provenance?.limitations ?? '',
       ];
     }),
   ];
@@ -78,8 +95,29 @@ export function financialCSVRows(ctx: ExportContext) {
       `Цена ${v.priceDate ?? 'нет'}: ${v.price ?? 'нет'}; базовая EPS: ${v.eps ?? 'нет'}`,
       'МСФО / MOEX',
       `${v.note} ${v.basis}; ${v.pe === null ? v.status : 'P/E = Price / EPS'}`,
+      v.pe === null ? 'Нет данных' : 'Расчётное',
+      'Price / EPS',
+      `Цена ${v.price}; EPS ${v.eps}`,
+      'Ретроспективный мультипликатор',
     ]),
   );
+  for (const r of ctx.model.projections)
+    for (const q of r.path.slice(1))
+      rows.push([
+        'Портфель',
+        q.year,
+        `Прогноз стоимости: ${r.name}`,
+        q.value,
+        '₽',
+        'Сценарные предпосылки',
+        'Годовая модель EPS × P/E',
+        'Прогноз',
+        `Прибыль ${q.value - ctx.amount}; дивиденды ${r.mode}`,
+        'Прогнозное',
+        'Годовая EPS/P/E/дивиденды',
+        JSON.stringify({ SBER: q.SBER, T: q.T }),
+        'Не факт и не гарантия; переоценка первого года не повторяется',
+      ]);
   return rows;
 }
 export function exportCSV(ctx: ExportContext) {
@@ -137,7 +175,20 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
     ],
   ]);
   sheet('Исходные финансы', [
-    ['Компания', 'Год', 'Показатель', 'Значение', 'Единица', 'Источник', 'Раздел', 'Примечание'],
+    [
+      'Компания',
+      'Год',
+      'Показатель',
+      'Значение',
+      'Единица',
+      'Источник',
+      'Раздел',
+      'Примечание',
+      'Тип данных',
+      'Метод',
+      'Входы',
+      'Ограничения',
+    ],
     ...data.financial.facts.map((f) => [
       f.company,
       f.year,
@@ -147,6 +198,10 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
       f.sourceId,
       f.section,
       f.note,
+      statusLabels[f.status],
+      f.provenance?.method ?? '',
+      JSON.stringify(f.provenance?.inputs ?? []),
+      f.provenance?.limitations ?? '',
     ]),
   ]);
   sheet('Финансовые показатели', [
@@ -438,6 +493,133 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
       .filter((s, i, a) => a.findIndex((x) => x.id === s.id) === i)
       .map((s) => [s.id, s.title, s.url, s.section, s.standard, s.accessed, s.note]),
   ]);
+  sheet('Расчётные показатели', [
+    [
+      'Компания',
+      'Год',
+      'Показатель',
+      'Значение',
+      'Тип данных',
+      'Формула',
+      'Входы и источники',
+      'Ограничения',
+    ],
+    ...(['SBER', 'T'] as Company[]).flatMap((c) =>
+      years
+        .map((y) => calculatedROA(data.financial, c, y))
+        .filter((f) => f.value !== null)
+        .map((f) => [
+          c,
+          f.year,
+          'Расчётная ROA по средним годовым активам',
+          f.value,
+          statusLabels[f.status],
+          f.provenance?.formula,
+          JSON.stringify(f.provenance?.inputs),
+          f.note,
+        ]),
+    ),
+  ]);
+  const annualRows: unknown[][] = [
+    [
+      'Сценарий',
+      'Год',
+      'Компания',
+      'EPS пред.',
+      'Рост EPS',
+      'Сплит',
+      'EPS',
+      'P/E',
+      'Цена',
+      'Выплаты',
+      'Дивиденд/акцию',
+      'Акций пред.',
+      'Дивиденд, ₽',
+      'Акций после',
+      'Деньги после',
+      'Стоимость',
+      'Тип',
+      'Режим дивидендов',
+    ],
+  ];
+  const annualIndex = new Map<string, number>();
+  for (const r of model.projections)
+    for (let i = 1; i < r.path.length; i++)
+      for (const c of ['SBER', 'T'] as Company[]) {
+        const a = r.path[i][c],
+          prev = r.path[i - 1][c],
+          row = annualRows.length + 1,
+          prior = annualIndex.get(`${r.id}-${r.path[i - 1].year}-${c}`);
+        annualIndex.set(`${r.id}-${r.path[i].year}-${c}`, row);
+        annualRows.push([
+          r.name,
+          r.path[i].year,
+          c,
+          prior
+            ? formula(`G${prior}`, prev.eps)
+            : formula(
+                `'Исходные финансы'!D${data.financial.facts.findIndex((f) => f.company === c && f.year === 2025 && f.metric === 'eps') + 2}`,
+                prev.eps,
+              ),
+          a.growth / 100,
+          a.shareFactor,
+          formula(`D${row}*(1+E${row})/F${row}`, a.eps),
+          a.pe,
+          formula(`G${row}*H${row}`, a.price),
+          a.payout / 100,
+          formula(`G${row}*J${row}`, a.dividend),
+          prior
+            ? formula(`N${prior}`, prev.shares)
+            : formula(
+                `'Методика'!B8*${c === 'SBER' ? "'Методика'!B7" : "(1-'Методика'!B7)"}/'Дневные цены'!${c === 'SBER' ? 'B' : 'C'}${data.market.quotes.findIndex((q) => q.date === model.period.till) + 2}`,
+                prev.shares,
+              ),
+          formula(`L${row}*F${row}*K${row}`, a.dividendCash),
+          formula(
+            r.mode === 'reinvest' ? `L${row}*F${row}+M${row}/I${row}` : `L${row}*F${row}`,
+            a.shares,
+          ),
+          formula(r.mode === 'cash' ? `${prior ? `O${prior}` : '0'}+M${row}` : '0', a.cash),
+          formula(`N${row}*I${row}+O${row}`, a.value),
+          'Прогнозное',
+          r.mode === 'reinvest' ? 'Реинвестиция' : 'Денежный остаток',
+        ]);
+      }
+  sheet('Годовой прогноз', annualRows);
+  sheet('Прогноз портфеля', [
+    ['Сценарий', 'Год', 'Стоимость', 'Первоначальная сумма', 'Прибыль / убыток', 'CAGR', 'Тип'],
+    ...model.projections.flatMap((r) =>
+      r.path.slice(1).map((q) => {
+        const row =
+          2 + model.projections.findIndex((x) => x.id === r.id) * ctx.horizon + q.step - 1;
+        return [
+          r.name,
+          q.year,
+          formula(
+            `'Годовой прогноз'!P${annualIndex.get(`${r.id}-${q.year}-SBER`)}+'Годовой прогноз'!P${annualIndex.get(`${r.id}-${q.year}-T`)}`,
+            q.value,
+          ),
+          ctx.amount,
+          formula(`C${row}-D${row}`, q.value - ctx.amount),
+          formula(`(C${row}/D${row})^(1/${q.step})-1`, (q.value / ctx.amount) ** (1 / q.step) - 1),
+          'Прогнозное',
+        ];
+      }),
+    ),
+  ]);
+  XLSX.utils.sheet_add_aoa(
+    wb.Sheets['Методика'],
+    [
+      ['Прогноз', 'EPS и P/E по каждому году; P/E не повторяет рост первого года'],
+      ['Дивиденды прогноза', model.dividendMode],
+      ['Ребалансировка прогноза', 'Отсутствует; число акций изменяет только сплит и реинвестиция'],
+      [
+        'Сценарии и экономика',
+        'Учебное плавное сближение роста EPS к устойчивому уровню; годовые предпосылки редактируемы',
+      ],
+    ],
+    { origin: -1 },
+  );
   wb.Workbook = { CalcPr: { calcMode: 'auto', fullCalcOnLoad: true } } as typeof wb.Workbook;
   return wb;
 }
@@ -596,7 +778,7 @@ export function reportHTML(ctx: ExportContext) {
       b: model.valuations.find((v) => v.company === 'T' && v.year === y)?.pe ?? null,
     })),
     'Исторический P/E, ×',
-  )}<h2>5. Сценарии 2026</h2><p>Ретроспективная учебная модель на EPS 2025, раскрытой в 2026. EPS Сбера ${rub(model.eps.SBER, 2)}, Т ${rub(model.eps.T, 3)} после сплита. Цена = EPS2025 × (1 + g) × P/E. Дивиденд = EPS2026 × доля выплат. Сценариям не приписаны вероятности. Горизонт данной таблицы — один год; в калькуляторе V(t) = V₀(1 + R)^t при постоянной сценарной ставке на весь горизонт.</p>${table(
+  )}<h2>5. Сценарии 2026</h2><p>Ретроспективная учебная модель на EPS 2025, раскрытой в 2026. EPS Сбера ${rub(model.eps.SBER, 2)}, Т ${rub(model.eps.T, 3)} после сплита. Цена = EPS2025 × (1 + g) × P/E. Дивиденд = EPS2026 × доля выплат. Сценариям не приписаны вероятности. Горизонт данной таблицы — один год; в калькуляторе рассчитываются отдельные годовые EPS, P/E, дивиденды, акции и денежный остаток. Доходность первого года не повторяется.</p>${table(
     ['Сценарий', 'Компания', 'g EPS', 'P/E', 'Выплаты', 'Цена', 'Дивиденд', 'Доходность'],
     ctx.scenarios.flatMap((s) =>
       (['SBER', 'T'] as Company[]).map((c) => {
@@ -616,12 +798,60 @@ export function reportHTML(ctx: ExportContext) {
   )}${table(
     ['Сценарий', 'Стоимость портфеля', 'Результат, ₽'],
     model.results.map((r) => [r.name, rub(r.value), rub(r.profit)]),
-  )}<ul>${ctx.scenarios.map((s) => `<li><b>${esc(s.name)}:</b> ${esc(s.premise)} Нарушение: ${esc(s.risk)}</li>`).join('')}</ul><h2>6. Инвестиционный вывод</h2><ol>${model.conclusions.map((s) => `<li>${esc(s)}</li>`).join('')}</ol><p>Положение эмитента оценивается по шести сигналам: положительная прибыль, рост капитала, ROE ≥ 15%, общий капитал ≥ 12%, NPL ≤ 6%, отсутствие снижения прибыли. Недостаточно данных — отсутствует ключевое поле; неблагоприятная динамика — прибыль/капитал ≤ 0 либо ≥3 отрицательных сигнала; повышенные риски — 1–2; устойчивое — 0. Риск акции высокий при σ ≥35% или просадке ≥40%, умеренный при σ ≥20% или просадке ≥20%, иначе низкий. Это учебные пороги.</p><h2>7. Ограничения</h2><ul>${data.market.notes.map((s) => `<li>${esc(s)}</li>`).join('')}<li>Две группы одного сектора не обеспечивают широкую диверсификацию; история и корреляция нестабильны. Нет гарантии доходности и достоверного прогноза банкротства по пяти годовым наблюдениям.</li><li>Налоги, комиссии, инфляция, валютные издержки и целочисленные лоты не учтены. Фактическая стратегия счета отличается от условной реинвестиции.</li><li>Падение цены и временный убыток не означают дефолт. NPL и ROE разных групп методологически различаются.</li></ul><h2>Пояснения показателей</h2><ul>${Object.values(
+  )}<ul>${ctx.scenarios.map((s) => `<li><b>${esc(s.name)}:</b> ${esc(s.premise)} Нарушение: ${esc(s.risk)}</li>`).join('')}</ul><h2>Годовой прогноз инвестиции</h2><p>Учебные предпосылки, не статистическая оценка: рост EPS приближается к пятому году к Сбер 0/5/8%, T 5/10/15%; P/E после 2026 по умолчанию постоянен, payout сохраняется. Ручные годовые параметры переопределяют эти допущения. Дивиденды: ${esc(model.dividendMode)}. Позиции не ребалансируются; сплит взаимно изменяет акции и EPS. Допэмиссия и налоги не моделируются.</p>${table(
+    ['Сценарий', 'Год', 'Стоимость', 'Прибыль', 'Прогнозный CAGR'],
+    model.projections.flatMap((r) =>
+      r.path
+        .slice(1)
+        .map((q) => [
+          r.name,
+          q.year,
+          rub(q.value),
+          rub(q.value - ctx.amount),
+          pct((q.value / ctx.amount) ** (1 / q.step) - 1, 2),
+        ]),
+    ),
+  )}${table(
+    ['Сценарий', 'Год', 'Акция', 'Рост EPS', 'EPS', 'P/E', 'Цена', 'Дивиденд', 'Акций', 'Деньги'],
+    model.projections.flatMap((r) =>
+      r.path
+        .slice(1)
+        .flatMap((q) =>
+          (['SBER', 'T'] as Company[]).map((c) => [
+            r.name,
+            q.year,
+            c,
+            pct(q[c].growth / 100),
+            fmt(q[c].eps, 3),
+            q[c].pe,
+            rub(q[c].price, 2),
+            rub(q[c].dividend, 2),
+            fmt(q[c].shares, 5),
+            rub(q[c].cash),
+          ]),
+        ),
+    ),
+  )}<h2>Статус финансовых данных</h2>${table(
+    ['Компания', 'Год', 'Показатель', 'Тип'],
+    data.financial.facts.map((f) => [
+      f.company,
+      f.year,
+      metrics[f.metric].label,
+      statusLabels[f.status],
+    ]),
+  )}<h3>Расчётная ROA по средним годовым активам</h3>${table(
+    ['Компания', 'Год', 'ROA, %', 'Метод', 'Ограничения'],
+    (['SBER', 'T'] as Company[]).flatMap((c) =>
+      years
+        .map((y) => calculatedROA(data.financial, c, y))
+        .map((f) => [c, f.year, fmt(f.value, 3), f.provenance?.formula, f.note]),
+    ),
+  )}<h2>6. Инвестиционный вывод</h2><ol>${model.conclusions.map((s) => `<li>${esc(s)}</li>`).join('')}</ol><p>Положение эмитента оценивается по шести сигналам: положительная прибыль, рост капитала, ROE ≥ 15%, общий капитал ≥ 12%, NPL ≤ 6%, отсутствие снижения прибыли. Недостаточно данных — отсутствует ключевое поле; неблагоприятная динамика — прибыль/капитал ≤ 0 либо ≥3 отрицательных сигнала; повышенные риски — 1–2; устойчивое — 0. Риск акции высокий при σ ≥35% или просадке ≥40%, умеренный при σ ≥20% или просадке ≥20%, иначе низкий. Это учебные пороги.</p><h2>7. Ограничения</h2><ul>${data.market.notes.map((s) => `<li>${esc(s)}</li>`).join('')}<li>Две группы одного сектора не обеспечивают широкую диверсификацию; история и корреляция нестабильны. Нет гарантии доходности и достоверного прогноза банкротства по пяти годовым наблюдениям.</li><li>Налоги, комиссии, инфляция, валютные издержки и целочисленные лоты не учтены. Фактическая стратегия счета отличается от условной реинвестиции.</li><li>Падение цены и временный убыток не означают дефолт. NPL и ROE разных групп методологически различаются.</li></ul><h2>Пояснения показателей</h2><ul>${Object.values(
     metricHelp,
   )
     .map(
       (m) =>
-        `<li><b>${esc(m.name)}:</b> ${esc(m.formula)}. ${esc(m.meaning)} ${esc(m.interpretation)}</li>`,
+        `<li><b>${esc(m.name)}:</b> ${katex.renderToString(m.latex, { output: 'mathml', displayMode: true, throwOnError: false })} ${esc(m.meaning)} ${esc(m.variables)} ${esc(m.example)} ${esc(m.interpretation)} ${esc(m.limitations)}</li>`,
     )
     .join(
       '',

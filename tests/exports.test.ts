@@ -31,7 +31,7 @@ it('создает читаемый XLSX с исходными пропуска�
     buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }),
     restored = XLSX.read(buffer, { type: 'buffer', cellFormula: true });
   expect(restored.SheetNames).toContain('Сценарные прогнозы');
-  expect(restored.SheetNames).toHaveLength(16);
+  expect(restored.SheetNames).toHaveLength(19);
   const p = restored.Sheets['Марковиц'];
   expect(p.A2.v).toBe(0);
   expect(p.B2.f).toBe('1-A2');

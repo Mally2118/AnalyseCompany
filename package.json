@@ -14,6 +14,7 @@
     "format": "prettier --write src tests scripts *.ts *.json README.md docs/*.md .github/workflows/*.yml"
   },
   "dependencies": {
+    "katex": "^0.19.1",
     "lucide-react": "^0.468.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@playwright/test": "^1.56.0",
     "@tailwindcss/vite": "^4.1.0",
+    "@types/katex": "^0.16.8",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

@@ -58,7 +58,7 @@ test('режимы компаний, восемь страниц и измене
   const old = await page.locator('.scenario-value').allTextContents();
   await page.getByLabel('Сумма инвестиций', { exact: true }).fill('250000');
   expect(await page.locator('.scenario-value').allTextContents()).not.toEqual(old);
-  await page.getByLabel('Инвестиционный горизонт').fill('3');
+  await page.getByLabel('Инвестиционный горизонт', { exact: true }).fill('3');
   await expect(page.locator('.scenario-grid')).toContainText('3 лет');
   await page.locator('nav').getByRole('link', { name: 'Прогноз 2026' }).click();
   await expect(page.getByRole('heading', { name: 'Прогноз 2026' })).toBeVisible();
@@ -151,8 +151,8 @@ test('CAGR сравнивается на общих датах, P/E сохран
     .locator('.card')
     .filter({ has: page.getByRole('heading', { name: 'Исторический P/E', exact: true }) });
   await expect(pe.locator('tbody tr')).toHaveCount(5);
-  await expect(pe.locator('tbody tr').filter({ hasText: '2022' })).toContainText('Нет данных');
-  await expect(pe.locator('tbody tr').filter({ hasText: '2023' })).toContainText('Нет данных');
+  await expect(pe.locator('tbody tr').filter({ hasText: '2022' })).toContainText('24,06');
+  await expect(pe.locator('tbody tr').filter({ hasText: '2023' })).toContainText('7,93');
   const last = pe.locator('tbody tr').filter({ hasText: '2025' });
   await expect(last).toContainText('4,76');
   await expect(last.getByRole('link', { name: 'Котировка MOEX' })).toHaveAttribute(
@@ -190,7 +190,7 @@ test('оба ползунка, точный ручной ввод и рублё�
   await expect(page.locator('.investment-split')).toContainText('92 592');
   await expect(page.locator('.capital-conclusion')).toContainText('123 456');
   const values = await page.locator('.scenario-value').allTextContents();
-  await page.getByLabel('Инвестиционный горизонт').fill('2');
+  await page.getByLabel('Инвестиционный горизонт', { exact: true }).fill('2');
   expect(await page.locator('.scenario-value').allTextContents()).not.toEqual(values);
   await expect(page.locator('.capital-conclusion')).toContainText('горизонте 2 лет');
 });
@@ -245,7 +245,10 @@ test('компактные страницы, основной CAGR и подро
   await expect(page.locator('.chart')).toHaveCount(1);
   await expect(page.locator('table')).toHaveCount(0);
   const cagr = page.locator('.kpi').filter({ hasText: 'Среднегодовая доходность (CAGR)' });
-  await expect(cagr.getByRole('note')).toHaveAttribute('title', /P₀.*P₁.*365,25/);
+  await cagr.getByRole('button', { name: /О показателе/ }).hover();
+  await expect(page.getByRole('dialog')).toContainText('365,25');
+  await expect(page.getByRole('dialog').locator('.katex')).toHaveCount(1);
+  await page.getByRole('dialog').getByRole('button', { name: 'Закрыть подсказку' }).click();
   const cases = [
     { company: 'Сбербанк', period: '2021', kind: 'Ценовая доходность', value: '0,54%' },
     { company: 'Т-Технологии', period: '2021', kind: 'Ценовая доходность', value: '-14,43%' },
@@ -278,7 +281,108 @@ test('компактные страницы, основной CAGR и подро
     .locator('.card')
     .filter({ has: page.getByRole('heading', { name: 'Все допустимые комбинации' }) });
   await expect(combinations.locator('tbody tr')).toHaveCount(101);
-  await expect(page.getByLabel('Безрисковая ставка, годовых')).toBeVisible();
+  await expect(page.getByLabel('Безрисковая ставка, годовых', { exact: true })).toBeVisible();
   await details.click();
   await expect(page.locator('table')).toHaveCount(0);
+});
+
+test('многолетний прогноз, выплаты и годовые предпосылки', async ({ page }) => {
+  await page.goto('./#calculator');
+  await page.getByLabel('Сумма инвестиций', { exact: true }).fill('500000');
+  await page.getByRole('slider', { name: 'Доля Сбербанка' }).fill('0');
+  await page.getByLabel('Режим прогноза').selectOption('multi');
+  await page.getByLabel('Инвестиционный горизонт', { exact: true }).fill('5');
+  const positive = page
+    .locator('.card')
+    .filter({ has: page.getByRole('heading', { name: 'Позитивный', exact: true }) });
+  await expect(positive.locator('.scenario-value')).toContainText('2 744 272');
+  await expect(positive).toContainText('40,6%');
+  await page.getByLabel('Дивиденды в прогнозе').selectOption('cash');
+  await expect(positive.locator('.scenario-value')).toContainText('2 570 019');
+  await page.getByText('Годовые предпосылки', { exact: true }).click();
+  await page.getByLabel('Сценарий траектории').selectOption('positive');
+  const before = await positive.locator('.scenario-value').innerText();
+  await page.getByLabel('2027 T growth', { exact: true }).fill('10');
+  expect(await positive.locator('.scenario-value').innerText()).not.toBe(before);
+  await page.getByRole('button', { name: 'Сбросить годовые предпосылки' }).click();
+  await expect(positive.locator('.scenario-value')).toHaveText(before);
+  await expect(
+    page.getByRole('heading', { name: 'Исторические показатели и прогноз' }),
+  ).toBeVisible();
+  await expect(page.getByRole('status')).toContainText('10 п.п.');
+});
+test('справочник, поиск, переход по ? и браузерный Назад', async ({ page }) => {
+  await page.goto('./');
+  const cagr = page.locator('.kpi').filter({ hasText: 'Среднегодовая доходность (CAGR)' });
+  await cagr.getByRole('button', { name: /О показателе/ }).click();
+  await expect(page).toHaveURL(/#guide\/cagr$/);
+  await expect(
+    page.getByRole('heading', { name: 'Формулы и показатели', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.math-formula .katex')).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'Пример расчёта' })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Обзор', exact: true })).toBeVisible();
+  await page.locator('nav').getByRole('link', { name: 'Формулы и показатели' }).click();
+  await page.getByLabel('Поиск показателя').fill('шарпа');
+  await expect(page.locator('.guide-entry')).toHaveCount(3);
+  await page.locator('.guide-entry').filter({ hasText: 'Коэффициент Шарпа' }).first().click();
+  await expect(page).toHaveURL(/#guide\/sharpe$/);
+  await expect(page.locator('main')).toContainText('0,4');
+  await expect(page.locator('.katex-error')).toHaveCount(0);
+});
+test('сводка, восстановленные EPS и отдельная расчётная ROA', async ({ page }) => {
+  await page.goto('./');
+  await page.getByText('Сводка показателей', { exact: true }).click();
+  await page.getByRole('button', { name: 'Все показатели', exact: true }).click();
+  await expect(page.locator('main')).toContainText('Расчётная ROA по средним годовым активам');
+  await page.getByRole('button', { name: 'Т-Технологии', exact: true }).click();
+  await expect(page.locator('table').first()).toContainText('68,872');
+  await page.locator('nav').getByRole('link', { name: 'Финансовый анализ' }).click();
+  await page.getByText('Восстановление и расчётные показатели', { exact: true }).click();
+  await expect(page.locator('main')).toContainText('3,435');
+  await page.getByLabel('Метод восстановления').selectOption('interpolation');
+  await expect(page.locator('main')).toContainText('Нет допустимого одиночного');
+  await page.getByLabel('Метод восстановления').selectOption('regression');
+  await expect(page.locator('main')).toContainText('≥12');
+});
+test('мобильная подсказка остаётся в экране и ведёт к формуле', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  // Touch-specific first-tap behaviour is selected via the coarse-hover media query.
+  await page.addInitScript(() => {
+    const original = window.matchMedia.bind(window);
+    window.matchMedia = (q) =>
+      q === '(hover: none)'
+        ? {
+            ...original(q),
+            matches: true,
+            media: q,
+            addListener() {},
+            removeListener() {},
+            addEventListener() {},
+            removeEventListener() {},
+            dispatchEvent() {
+              return true;
+            },
+            onchange: null,
+          }
+        : original(q);
+  });
+  await page.goto('./');
+  const help = page
+    .locator('.kpi')
+    .filter({ hasText: 'Среднегодовая доходность (CAGR)' })
+    .getByRole('button', { name: /О показателе/ });
+  await help.click();
+  const popup = page.getByRole('dialog');
+  await expect(popup).toBeVisible();
+  const bounds = await popup.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+  expect(bounds!.y).toBeGreaterThanOrEqual(0);
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(844);
+  await popup.getByRole('link', { name: 'Полная формула и пример →' }).click();
+  await expect(page).toHaveURL(/#guide\/cagr$/);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

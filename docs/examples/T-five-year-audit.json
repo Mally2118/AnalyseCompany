@@ -1,0 +1,427 @@
+{
+  "input": {
+    "company": "T",
+    "weightT": 1,
+    "amount": 500000,
+    "horizon": 5,
+    "scenario": {
+      "id": "positive",
+      "name": "Позитивный",
+      "color": "#40cbb0",
+      "growthSBER": 15,
+      "growthT": 35,
+      "peSBER": 5,
+      "peT": 7,
+      "payoutSBER": 50,
+      "payoutT": 30,
+      "premise": "Ускорение прибыли и повышение мультипликаторов при улучшении конъюнктуры.",
+      "risk": "Снижение ставки и интеграционный эффект могут не реализоваться."
+    },
+    "eps": 68.872,
+    "initialPrice": 328
+  },
+  "old": {
+    "return": 1.0693096341463417,
+    "value": 18971313.592284914,
+    "reason": "Ошибочное экономическое повторение доходности переоценки первого года"
+  },
+  "new": {
+    "reinvest": {
+      "id": "positive",
+      "name": "Позитивный",
+      "color": "#40cbb0",
+      "path": [
+        {
+          "year": 2025,
+          "step": 0,
+          "value": 500000,
+          "SBER": {
+            "eps": 77.81,
+            "price": 299.9,
+            "shares": 0,
+            "cash": 0,
+            "dividend": 0,
+            "dividendCash": 0,
+            "value": 0,
+            "growth": 0,
+            "pe": 3.8542603778434645,
+            "payout": 0,
+            "shareFactor": 1
+          },
+          "T": {
+            "eps": 68.872,
+            "price": 328,
+            "shares": 1524.3902439024391,
+            "cash": 0,
+            "dividend": 0,
+            "dividendCash": 0,
+            "value": 500000,
+            "growth": 0,
+            "pe": 4.762457892902776,
+            "payout": 0,
+            "shareFactor": 1
+          }
+        },
+        {
+          "year": 2026,
+          "step": 1,
+          "value": 1034654.8170731709,
+          "SBER": {
+            "eps": 89.4815,
+            "price": 447.40749999999997,
+            "shares": 0,
+            "cash": 0,
+            "growth": 15,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 44.74075,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 92.97720000000001,
+            "price": 650.8404,
+            "shares": 1589.7212543554008,
+            "cash": 0,
+            "growth": 35,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 27.89316,
+            "dividendCash": 42520.06097560976,
+            "value": 1034654.8170731709
+          }
+        },
+        {
+          "year": 2027,
+          "step": 2,
+          "value": 1402696.316289199,
+          "SBER": {
+            "eps": 101.33779875,
+            "price": 506.68899375,
+            "shares": 0,
+            "cash": 0,
+            "growth": 13.25,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 50.668899375,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 120.87036000000002,
+            "price": 846.0925200000001,
+            "shares": 1657.8521652563466,
+            "cash": 0,
+            "growth": 30,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 36.26110800000001,
+            "dividendCash": 57645.05409407667,
+            "value": 1402696.316289199
+          }
+        },
+        {
+          "year": 2028,
+          "step": 3,
+          "value": 1828514.8408769914,
+          "SBER": {
+            "eps": 112.99164560625,
+            "price": 564.95822803125,
+            "shares": 0,
+            "cash": 0,
+            "growth": 11.5,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 56.495822803125,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 151.08795000000003,
+            "price": 1057.6156500000002,
+            "shares": 1728.9029723387614,
+            "cash": 0,
+            "growth": 25,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 45.32638500000001,
+            "dividendCash": 75144.4455154928,
+            "value": 1828514.8408769914
+          }
+        },
+        {
+          "year": 2029,
+          "step": 4,
+          "value": 2288255.7151546353,
+          "SBER": {
+            "eps": 124.00833105285938,
+            "price": 620.0416552642969,
+            "shares": 0,
+            "cash": 0,
+            "growth": 9.75,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 62.00416552642969,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 181.30554000000004,
+            "price": 1269.1387800000002,
+            "shares": 1802.9988140104226,
+            "cash": 0,
+            "growth": 20,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 54.39166200000002,
+            "dividendCash": 94037.9061022453,
+            "value": 2288255.7151546353
+          }
+        },
+        {
+          "year": 2030,
+          "step": 5,
+          "value": 2744272.3898175946,
+          "SBER": {
+            "eps": 133.92899753708812,
+            "price": 669.6449876854406,
+            "shares": 0,
+            "cash": 0,
+            "growth": 8,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 66.96449876854406,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 208.50137100000003,
+            "price": 1459.5095970000002,
+            "shares": 1880.2701917537265,
+            "cash": 0,
+            "growth": 15,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 62.550411300000015,
+            "dividendCash": 112778.31738976417,
+            "value": 2744272.3898175946
+          }
+        }
+      ],
+      "value": 2744272.3898175946,
+      "profit": 2244272.3898175946,
+      "cagr": 0.40569610794405553,
+      "mode": "reinvest",
+      "horizon": 5
+    },
+    "cash": {
+      "id": "positive",
+      "name": "Позитивный",
+      "color": "#40cbb0",
+      "path": [
+        {
+          "year": 2025,
+          "step": 0,
+          "value": 500000,
+          "SBER": {
+            "eps": 77.81,
+            "price": 299.9,
+            "shares": 0,
+            "cash": 0,
+            "dividend": 0,
+            "dividendCash": 0,
+            "value": 0,
+            "growth": 0,
+            "pe": 3.8542603778434645,
+            "payout": 0,
+            "shareFactor": 1
+          },
+          "T": {
+            "eps": 68.872,
+            "price": 328,
+            "shares": 1524.3902439024391,
+            "cash": 0,
+            "dividend": 0,
+            "dividendCash": 0,
+            "value": 500000,
+            "growth": 0,
+            "pe": 4.762457892902776,
+            "payout": 0,
+            "shareFactor": 1
+          }
+        },
+        {
+          "year": 2026,
+          "step": 1,
+          "value": 1034654.8170731709,
+          "SBER": {
+            "eps": 89.4815,
+            "price": 447.40749999999997,
+            "shares": 0,
+            "cash": 0,
+            "growth": 15,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 44.74075,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 92.97720000000001,
+            "price": 650.8404,
+            "shares": 1524.3902439024391,
+            "cash": 42520.06097560976,
+            "growth": 35,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 27.89316,
+            "dividendCash": 42520.06097560976,
+            "value": 1034654.8170731709
+          }
+        },
+        {
+          "year": 2027,
+          "step": 2,
+          "value": 1387571.3231707322,
+          "SBER": {
+            "eps": 101.33779875,
+            "price": 506.68899375,
+            "shares": 0,
+            "cash": 0,
+            "growth": 13.25,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 50.668899375,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 120.87036000000002,
+            "price": 846.0925200000001,
+            "shares": 1524.3902439024391,
+            "cash": 97796.14024390245,
+            "growth": 30,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 36.26110800000001,
+            "dividendCash": 55276.0792682927,
+            "value": 1387571.3231707322
+          }
+        },
+        {
+          "year": 2028,
+          "step": 3,
+          "value": 1779110.2179878051,
+          "SBER": {
+            "eps": 112.99164560625,
+            "price": 564.95822803125,
+            "shares": 0,
+            "cash": 0,
+            "growth": 11.5,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 56.495822803125,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 151.08795000000003,
+            "price": 1057.6156500000002,
+            "shares": 1524.3902439024391,
+            "cash": 166891.23932926834,
+            "growth": 25,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 45.32638500000001,
+            "dividendCash": 69095.09908536587,
+            "value": 1779110.2179878051
+          }
+        },
+        {
+          "year": 2029,
+          "step": 4,
+          "value": 2184468.132621952,
+          "SBER": {
+            "eps": 124.00833105285938,
+            "price": 620.0416552642969,
+            "shares": 0,
+            "cash": 0,
+            "growth": 9.75,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 62.00416552642969,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 181.30554000000004,
+            "price": 1269.1387800000002,
+            "shares": 1524.3902439024391,
+            "cash": 249805.35823170742,
+            "growth": 20,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 54.39166200000002,
+            "dividendCash": 82914.11890243906,
+            "value": 2184468.132621952
+          }
+        },
+        {
+          "year": 2030,
+          "step": 5,
+          "value": 2570018.7855182933,
+          "SBER": {
+            "eps": 133.92899753708812,
+            "price": 669.6449876854406,
+            "shares": 0,
+            "cash": 0,
+            "growth": 8,
+            "pe": 5,
+            "payout": 50,
+            "shareFactor": 1,
+            "dividend": 66.96449876854406,
+            "dividendCash": 0,
+            "value": 0
+          },
+          "T": {
+            "eps": 208.50137100000003,
+            "price": 1459.5095970000002,
+            "shares": 1524.3902439024391,
+            "cash": 345156.5949695123,
+            "growth": 15,
+            "pe": 7,
+            "payout": 30,
+            "shareFactor": 1,
+            "dividend": 62.550411300000015,
+            "dividendCash": 95351.23673780491,
+            "value": 2570018.7855182933
+          }
+        }
+      ],
+      "value": 2570018.7855182933,
+      "profit": 2070018.7855182933,
+      "cagr": 0.38737306503790503,
+      "mode": "cash",
+      "horizon": 5
+    }
+  },
+  "type": "Сценарный прогноз на учебных предпосылках, не эконометрическая оценка"
+}

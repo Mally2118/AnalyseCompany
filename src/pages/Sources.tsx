@@ -1,3 +1,4 @@
+import { DataStatus } from '../components/DataStatus';
 import { useState } from 'react';
 import { ExternalLink, FileJson } from 'lucide-react';
 import type { DataSet } from '../services/data';
@@ -98,6 +99,7 @@ export function Sources({ data }: { data: DataSet }) {
                         <td>{metrics[f.metric].label}</td>
                         <td>
                           {fmt(f.value, 3)} {f.value === null ? '' : f.unit}
+                          <DataStatus fact={f} />
                         </td>
                         <td>
                           <a

@@ -153,13 +153,17 @@ describe('P/E на подтвержденной базе акций', () => {
   it('корректировка обеих величин на сплит не меняет P/E', () => {
     expect(priceEarnings(3280, 688.72)).toBeCloseTo(priceEarnings(328, 68.872)!, 12);
   });
-  it('не выдумывает EPS T за 2022–2023; сохраняет источники и ретроспективную маркировку', () => {
+  it('использует проверенную базовую EPS T за 2022–2023 и сохраняет ретроспективную маркировку', () => {
     const pe = historicalValuations(data.financial, data.market);
     expect(pe).toHaveLength(10);
     for (const v of pe) {
       expect(v.note).toContain('Ретроспективный');
       expect(v.priceUrl).toContain('iss.moex.com');
-      if (v.company === 'T' && [2022, 2023].includes(v.year)) expect(v.pe).toBeNull();
+      if (v.company === 'T' && [2022, 2023].includes(v.year)) {
+        expect(v.eps).toBe(v.year === 2022 ? 10.559 : 40.508);
+        expect(v.pe).toBeCloseTo(v.price! / v.eps!, 12);
+        expect(v.epsSourceId).toBe('t23full');
+      }
     }
     expect(pe.find((v) => v.company === 'T' && v.year === 2025)?.pe).toBeCloseTo(328 / 68.872, 12);
   });

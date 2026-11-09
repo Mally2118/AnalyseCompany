@@ -1,3 +1,5 @@
+import { MetricGuide } from './pages/MetricGuide';
+import { type DividendMode, type ProjectionPlans } from './calculations/projection';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
@@ -10,6 +12,7 @@ import {
   FileText,
   GraduationCap,
   LayoutDashboard,
+  BookOpen,
   Menu,
   Moon,
   PanelLeftClose,
@@ -43,10 +46,11 @@ const pages = [
   { id: 'calculator', label: 'Калькулятор', icon: SlidersHorizontal },
   { id: 'forecast', label: 'Прогноз 2026', icon: TrendingUp },
   { id: 'stability', label: 'Устойчивость', icon: ShieldCheck },
+  { id: 'guide', label: 'Формулы и показатели', icon: BookOpen },
   { id: 'sources', label: 'Данные и источники', icon: Database },
 ];
 function getPage() {
-  const id = window.location.hash.slice(1);
+  const id = window.location.hash.slice(1).split('/')[0];
   return pages.some((p) => p.id === id) ? id : 'overview';
 }
 function safeTheme() {
@@ -103,16 +107,31 @@ function Dashboard({ data }: { data: DataSet }) {
     [amount, setAmount] = useState(100000),
     [horizon, setHorizon] = useState(1),
     [method, setMethod] = useState('manual'),
+    [dividendMode, setDividendMode] = useState<DividendMode>('reinvest'),
+    [plans, setPlans] = useState<ProjectionPlans>({}),
+    [guideMetric, setGuideMetric] = useState(() => location.hash.split('/')[1]),
     [scenarios, setScenarios] = useState(() => structuredClone(defaultScenarios)),
     [theme, setTheme] = useState(safeTheme),
     [mobile, setMobile] = useState(false),
     [exports, setExports] = useState(false),
     [exportError, setExportError] = useState(''),
     [busy, setBusy] = useState(false);
-  const model = useModel(data, kind, start, rf, weight, amount, scenarios, horizon);
+  const model = useModel(
+    data,
+    kind,
+    start,
+    rf,
+    weight,
+    amount,
+    scenarios,
+    horizon,
+    dividendMode,
+    plans,
+  );
   useEffect(() => {
     const update = () => {
       setPage(getPage());
+      setGuideMetric(location.hash.split('/')[1]);
       setMobile(false);
       window.scrollTo({ top: 0 });
     };
@@ -145,6 +164,11 @@ function Dashboard({ data }: { data: DataSet }) {
     setHorizon,
     method,
     setMethod,
+    dividendMode,
+    setDividendMode,
+    plans,
+    setPlans,
+    scenarios,
   };
   const ctx = useMemo(
     () => ({ data, model, kind, start, rf, weight, amount, scenarios, horizon }),
@@ -283,67 +307,81 @@ function Dashboard({ data }: { data: DataSet }) {
           </div>
         </header>
         <main>
-          <div className="global-controls">
-            <div className="segmented company-switch" aria-label="Выбор компании">
-              <button className={mode === 'SBER' ? 'active' : ''} onClick={() => setMode('SBER')}>
-                <i className="dot mint-bg" />
-                Сбербанк
-              </button>
-              <button className={mode === 'T' ? 'active' : ''} onClick={() => setMode('T')}>
-                <i className="dot blue-bg" />
-                Т-Технологии
-              </button>
-              <button
-                className={mode === 'compare' ? 'active' : ''}
-                onClick={() => setMode('compare')}
-              >
-                Сравнение
-              </button>
-            </div>
-            <div className="period-controls">
-              <label>
-                <span>Рыночный период</span>
-                <select
-                  aria-label="Рыночный период"
-                  value={start}
-                  onChange={(e) => setStart(Number(e.target.value))}
-                >
-                  <option value={2021}>2021 — 2025</option>
-                  <option value={2023}>2023 — 2025</option>
-                </select>
-              </label>
-              <span className="data-status">
-                <span className="live-dot" />
-                Проверено {date(data.financial.updatedAt)}
-              </span>
-            </div>
-          </div>
-          <div className="return-controls">
-            <div className="segmented small">
-              <button className={kind === 'price' ? 'active' : ''} onClick={() => setKind('price')}>
-                Ценовая доходность
-              </button>
-              <button className={kind === 'total' ? 'active' : ''} onClick={() => setKind('total')}>
-                С дивидендами
-              </button>
-            </div>
-            <span>
-              {kind === 'price'
-                ? 'Без дивидендов'
-                : 'Условная реинвестиция в дату реестра · до налогов'}
-            </span>
-          </div>
-          {exportError && <Notice tone="warn">{exportError}</Notice>}
-          <p className="analysis-dates">
-            {date(model.period.from)} — {date(model.period.till)} · {model.pair.rows.length} общих
-            месяцев
-            {model.period.limited && (
-              <span className="period-warning">
-                Общий период сокращён{' '}
-                <Hint text="Полная доходность T за 2021 не рассчитана: не подтверждён рублёвый курс USD-дивиденда. Оба режима и обе акции используют одинаковые даты с конца 2021. Пятилетняя ценовая история доступна в разделе «Подробнее» обзора. Для короткой базы выберите 2023–2025." />
-              </span>
-            )}
-          </p>
+          {page !== 'guide' && (
+            <>
+              <div className="global-controls">
+                <div className="segmented company-switch" aria-label="Выбор компании">
+                  <button
+                    className={mode === 'SBER' ? 'active' : ''}
+                    onClick={() => setMode('SBER')}
+                  >
+                    <i className="dot mint-bg" />
+                    Сбербанк
+                  </button>
+                  <button className={mode === 'T' ? 'active' : ''} onClick={() => setMode('T')}>
+                    <i className="dot blue-bg" />
+                    Т-Технологии
+                  </button>
+                  <button
+                    className={mode === 'compare' ? 'active' : ''}
+                    onClick={() => setMode('compare')}
+                  >
+                    Сравнение
+                  </button>
+                </div>
+                <div className="period-controls">
+                  <label>
+                    <span>Рыночный период</span>
+                    <select
+                      aria-label="Рыночный период"
+                      value={start}
+                      onChange={(e) => setStart(Number(e.target.value))}
+                    >
+                      <option value={2021}>2021 — 2025</option>
+                      <option value={2023}>2023 — 2025</option>
+                    </select>
+                  </label>
+                  <span className="data-status">
+                    <span className="live-dot" />
+                    Проверено {date(data.financial.updatedAt)}
+                  </span>
+                </div>
+              </div>
+              <div className="return-controls">
+                <div className="segmented small">
+                  <button
+                    className={kind === 'price' ? 'active' : ''}
+                    onClick={() => setKind('price')}
+                  >
+                    Ценовая доходность
+                  </button>
+                  <button
+                    className={kind === 'total' ? 'active' : ''}
+                    onClick={() => setKind('total')}
+                  >
+                    С дивидендами
+                  </button>
+                </div>
+                <span>
+                  {kind === 'price'
+                    ? 'История: без дивидендов'
+                    : 'История: условная реинвестиция в дату реестра · до налогов'}
+                </span>
+              </div>
+              {exportError && <Notice tone="warn">{exportError}</Notice>}
+              <p className="analysis-dates">
+                {date(model.period.from)} — {date(model.period.till)} · {model.pair.rows.length}{' '}
+                общих месяцев
+                {model.period.limited && (
+                  <span className="period-warning">
+                    Общий период сокращён{' '}
+                    <Hint text="Полная доходность T за 2021 не рассчитана: рублёвый эквивалент эмитента 17,82 ₽ известен, но фактические курс и дата зачисления инвестору не установлены. Оба режима и обе акции используют одинаковые даты с конца 2021. Пятилетняя ценовая история доступна в разделе «Подробнее» обзора. Для короткой базы выберите 2023–2025." />
+                  </span>
+                )}
+              </p>
+            </>
+          )}
+          {page === 'guide' && <MetricGuide selected={guideMetric} />}
           {page === 'overview' && (
             <Overview data={data} model={model} mode={mode} navigate={navigate} />
           )}{' '}
@@ -356,7 +394,10 @@ function Dashboard({ data }: { data: DataSet }) {
               model={model}
               scenarios={scenarios}
               setScenarios={setScenarios}
-              reset={() => setScenarios(structuredClone(defaultScenarios))}
+              reset={() => {
+                setScenarios(structuredClone(defaultScenarios));
+                setPlans({});
+              }}
               mode={mode}
               amount={amount}
               weight={weight}

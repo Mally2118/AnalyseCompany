@@ -1,3 +1,6 @@
+import { MetricHelp } from '../components/MetricHelp';
+import { DataStatus } from '../components/DataStatus';
+import { Recovery } from '../components/Recovery';
 import { ValuationHistory } from '../components/ValuationHistory';
 import { useState } from 'react';
 import { ExternalLink } from 'lucide-react';
@@ -66,8 +69,7 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
                   <tr key={c + m}>
                     <th>
                       <span className="metric-label">
-                        {metrics[m].label}{' '}
-                        <Hint text={`${metrics[m].definition} Формула: ${metrics[m].formula}`} />
+                        {metrics[m].label} <MetricHelp metric={m} />
                       </span>
                       <small>
                         {view === 'growth'
@@ -104,11 +106,12 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
                             title={`${f?.note ?? ''} ${f?.section ?? ''}`}
                           >
                             {view === 'values'
-                              ? fmt(v, m === 'eps' || m === 'dividend' ? 2 : 1)
+                              ? fmt(v, m === 'eps' || m === 'dividend' ? 3 : 1)
                               : metrics[m].unit === '%'
                                 ? `${fmt(g)}${g !== null ? ' п.п.' : ''}`
                                 : pct(g)}
                           </button>
+                          {f && <DataStatus fact={f} />}
                         </td>
                       );
                     })}
@@ -174,6 +177,9 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
       >
         {metricTable(rows)}
       </Card>
+      <Disclosure title="Восстановление и расчётные показатели">
+        <Recovery data={data.financial} companies={cs} />
+      </Disclosure>
       <Disclosure title="Дополнительные показатели">
         <div className="grid-two">
           {' '}
@@ -234,7 +240,8 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
                         {f.company} · {f.year}
                       </td>
                       <td>
-                        {fmt(f.value, 2)} {f.value === null ? '' : f.unit}
+                        {fmt(f.value, 3)} {f.value === null ? '' : f.unit}
+                        <DataStatus fact={f} />
                       </td>
                       <td>
                         <a href={source.url} target="_blank" rel="noreferrer">
@@ -246,6 +253,9 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
                       </td>
                       <td className="wrap-cell">
                         {f.note || source.note || 'Опубликованные данные'}
+                        <small>
+                          {f.provenance?.method} {f.provenance?.formula} {f.provenance?.limitations}
+                        </small>
                       </td>
                     </tr>
                   );

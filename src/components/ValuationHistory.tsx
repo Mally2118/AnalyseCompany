@@ -1,11 +1,11 @@
+import { MetricHelp } from './MetricHelp';
 import type { Company, Mode } from '../data/types';
 import { companies, years } from '../data/types';
 import type { DataSet } from '../services/data';
 import { historicalValuations } from '../calculations/valuation';
-import { Card, Hint } from './ui';
+import { Card } from './ui';
 import { TimeChart, companySeries } from '../charts/Charts';
 import { date, fmt } from '../utils/format';
-import { metricExplanation } from '../data/metric-help';
 export function ValuationHistory({ data, mode }: { data: DataSet; mode: Mode }) {
   const cs: Company[] = mode === 'compare' ? ['SBER', 'T'] : [mode],
     values = historicalValuations(data.financial, data.market).filter((v) =>
@@ -30,9 +30,11 @@ export function ValuationHistory({ data, mode }: { data: DataSet; mode: Mode }) 
               <th>Акция / год</th>
               <th>Дата цены</th>
               <th>Цена, ₽</th>
-              <th>EPS, ₽</th>
               <th>
-                P/E <Hint text={metricExplanation('pe')} />
+                EPS, ₽ <MetricHelp metric="eps" />
+              </th>
+              <th>
+                P/E <MetricHelp metric="pe" />
               </th>
               <th>Исходные данные</th>
             </tr>

@@ -1,4 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { MetricHelp } from './MetricHelp';
+import { metricForLabel } from '../data/metric-help';
+import { useId, useState, type ReactNode } from 'react';
 import { ChevronDown, Info } from 'lucide-react';
 export function Disclosure({
   title,
@@ -49,7 +51,10 @@ export function Card({
       {title && (
         <div className="card-head">
           <div>
-            <h2>{title}</h2>
+            <div className="card-title-row">
+              <h2>{title}</h2>
+              {metricForLabel(title) && <MetricHelp metric={metricForLabel(title)!} />}
+            </div>
             {subtitle && <p>{subtitle}</p>}
           </div>
           {action}
@@ -89,7 +94,11 @@ export function KPI({
       <div className="kpi-top">
         <span>
           {label}
-          {hint && <Hint text={hint} />}
+          {metricForLabel(label) ? (
+            <MetricHelp metric={metricForLabel(label)!} />
+          ) : (
+            hint && <Hint text={hint} />
+          )}
         </span>
         {icon && <span className={`kpi-icon ${color}`}>{icon}</span>}
       </div>
@@ -133,11 +142,16 @@ export function NumberField({
   step?: number;
   suffix?: string;
 }) {
+  const fieldId = useId();
   return (
-    <label className="field">
-      <span>{label}</span>
+    <label className="field" htmlFor={fieldId}>
+      <span>
+        {label}
+        {metricForLabel(label) && <MetricHelp metric={metricForLabel(label)!} />}
+      </span>
       <div className="input-wrap">
         <input
+          id={fieldId}
           aria-label={label}
           type="number"
           value={value}

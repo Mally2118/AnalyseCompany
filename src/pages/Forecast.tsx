@@ -1,9 +1,10 @@
+import { MetricHelp } from '../components/MetricHelp';
+import { MathFormula } from '../components/MathFormula';
 import { RefreshCw } from 'lucide-react';
 import type { Mode, Scenario, Company } from '../data/types';
 import { companies } from '../data/types';
 import type { AnalysisModel } from '../services/model';
-import { Card, Disclosure, Hint, NumberField, SectionIntro } from '../components/ui';
-import { metricExplanation } from '../data/metric-help';
+import { Card, Disclosure, NumberField, SectionIntro } from '../components/ui';
 import { fmt, pct, rub } from '../utils/format';
 export function Forecast({
   model,
@@ -52,17 +53,23 @@ export function Forecast({
                     <div className="scenario-security" key={c}>
                       <strong className="mini-company">{companies[c].name}</strong>
                       <div>
-                        <span>Цена акции</span>
+                        <span>
+                          Цена акции <MetricHelp metric="forecast_price" />
+                        </span>
                         <b>{rub(r[c].price, 2)}</b>
                       </div>
                       <div>
-                        <span>Доходность с дивидендом</span>
+                        <span>
+                          Доходность с дивидендом <MetricHelp metric="scenario_return" />
+                        </span>
                         <b>{pct(r[c].return)}</b>
                       </div>
                     </div>
                   ))}
                   <div className="scenario-total">
-                    <span>Портфель · итог одного года</span>
+                    <span>
+                      Портфель · итог одного года <MetricHelp metric="value" />
+                    </span>
                     <strong>{rub(r.value)}</strong>
                     <span>
                       Прибыль / убыток{' '}
@@ -108,8 +115,7 @@ export function Forecast({
                     <p className="footnote">
                       Исторический P/E 2025:{' '}
                       {fmt(model.valuations.find((v) => v.company === c && v.year === 2025)?.pe, 2)}{' '}
-                      ×. Дивиденд сценария: {rub(r?.[c].dividend, 2)}.{' '}
-                      <Hint text={metricExplanation('pe')} />
+                      ×. Дивиденд сценария: {rub(r?.[c].dividend, 2)}. <MetricHelp metric="pe" />
                     </p>
                   </div>
                 ))}
@@ -132,6 +138,7 @@ export function Forecast({
       </Card>
       <Disclosure title="Подробнее">
         <h3>Методика прогноза</h3>
+        <MathFormula latex="P_t=EPS_t(P/E)_t" />
         <p>
           Цена = EPS2025 × (1 + g) × P/E; дивиденд = EPS2026 × доля выплат. Доходность = (цена −
           цена конца 2025 + дивиденд) / цена конца 2025. Внутри года дивиденд не реинвестируется.

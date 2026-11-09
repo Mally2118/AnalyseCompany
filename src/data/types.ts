@@ -25,6 +25,13 @@ export interface Source {
   note: string;
 }
 export interface Fact {
+  status: 'actual' | 'calculated' | 'estimated' | 'missing';
+  provenance?: {
+    method: string;
+    formula: string;
+    inputs: { label: string; value: number; unit: string; sourceId: string }[];
+    limitations: string;
+  };
   company: Company;
   year: number;
   metric: Metric;

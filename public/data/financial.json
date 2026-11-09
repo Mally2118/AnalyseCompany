@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28",
+  "updatedAt": "2026-11-09",
   "facts": [
     {
       "company": "SBER",
@@ -10,7 +10,8 @@
       "sourceId": "sber21",
       "section": "Отчет о финансовом положении и прибылях; PDF с. 5–6",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -21,7 +22,8 @@
       "sourceId": "sber21",
       "section": "Отчет о финансовом положении и прибылях; PDF с. 5–6",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -32,7 +34,8 @@
       "sourceId": "sber21",
       "section": "Отчет о финансовом положении и прибылях; PDF с. 5–6",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -43,7 +46,8 @@
       "sourceId": "sber21",
       "section": "Отчет о финансовом положении и прибылях; PDF с. 5–6",
       "note": "Продолжающаяся деятельность в сравнительной колонке 2022; отличается от исходного релиза 2021 (1802,0 и 616,8).",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -54,7 +58,8 @@
       "sourceId": "sber21",
       "section": "Отчет о финансовом положении и прибылях; PDF с. 5–6",
       "note": "Продолжающаяся деятельность в сравнительной колонке 2022; отличается от исходного релиза 2021 (1802,0 и 616,8).",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -65,7 +70,8 @@
       "sourceId": "sber21-ratios",
       "section": "Ключевые финансовые результаты, PDF с. 4",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -76,7 +82,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -87,7 +94,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -98,7 +106,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах. Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -109,7 +118,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -120,7 +130,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -131,7 +142,8 @@
       "sourceId": "sber21",
       "section": "Отчет о финансовом положении и прибылях; PDF с. 5–6",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -142,7 +154,8 @@
       "sourceId": "sber-div-check",
       "section": "История выплат; даты реестров сверены с Финам",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -153,7 +166,8 @@
       "sourceId": "sber22",
       "section": "PDF с. 5–6, примечания 5–7",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -164,7 +178,8 @@
       "sourceId": "sber22",
       "section": "PDF с. 5–6, примечания 5–7",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -175,7 +190,8 @@
       "sourceId": "sber22",
       "section": "PDF с. 5–6, примечания 5–7",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -186,7 +202,8 @@
       "sourceId": "sber22",
       "section": "PDF с. 5–6, примечания 5–7",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -197,7 +214,8 @@
       "sourceId": "sber22",
       "section": "PDF с. 5–6, примечания 5–7",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -208,7 +226,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -219,7 +238,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах. Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -230,7 +250,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -241,7 +262,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах. Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8. Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -252,7 +274,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах. Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -263,7 +286,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -274,7 +298,8 @@
       "sourceId": "sber22",
       "section": "PDF с. 5–6, примечания 5–7",
       "note": "Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -285,7 +310,8 @@
       "sourceId": "sber-div-check",
       "section": "История выплат; даты реестров сверены с Финам",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту. Пересмотр 2023 (МСФО 17); первоначальная прибыль была 270,5 млрд ₽, использовано 287,8.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -296,7 +322,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -307,7 +334,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -318,7 +346,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -329,7 +358,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -340,7 +370,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -351,7 +382,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -362,7 +394,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -373,7 +406,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -384,7 +418,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -395,7 +430,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -406,7 +442,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -417,7 +454,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -428,7 +466,8 @@
       "sourceId": "sber-div-check",
       "section": "История выплат; даты реестров сверены с Финам",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -439,7 +478,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -450,7 +490,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -461,7 +502,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -472,7 +514,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -483,7 +526,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -494,7 +538,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -505,7 +550,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -516,7 +562,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -527,7 +574,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -538,7 +586,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -549,7 +598,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -560,7 +610,8 @@
       "sourceId": "sber24",
       "section": "PDF с. 6–7; примечания 29 и 39 (с. 154)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -571,7 +622,8 @@
       "sourceId": "sber-div-check",
       "section": "История выплат; даты реестров сверены с Финам",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -582,7 +634,8 @@
       "sourceId": "sber25",
       "section": "Годовая консолидированная финансовая отчетность 2025",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -593,7 +646,8 @@
       "sourceId": "sber25",
       "section": "Обобщенный консолидированный баланс, PDF с. 5",
       "note": "Балансовые активы группы по МСФО; не активы, взвешенные по риску.",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -604,7 +658,8 @@
       "sourceId": "sber25",
       "section": "Обобщенный консолидированный баланс, PDF с. 5",
       "note": "Полный балансовый капитал группы. Не регуляторный капитал 7 900,3 млрд ₽ и не показатель из биржевой карточки.",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -615,7 +670,8 @@
       "sourceId": "sber25",
       "section": "Годовая консолидированная финансовая отчетность 2025",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -626,7 +682,8 @@
       "sourceId": "sber25",
       "section": "Годовая консолидированная финансовая отчетность 2025",
       "note": "",
-      "comparable": true
+      "comparable": true,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -637,7 +694,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -648,7 +706,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "SBER",
@@ -659,7 +718,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -670,7 +730,8 @@
       "sourceId": "sber25",
       "section": "Годовая консолидированная финансовая отчетность 2025",
       "note": "Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -681,7 +742,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -692,7 +754,8 @@
       "sourceId": "sber-ratios",
       "section": "Финансовые показатели (переданы эмитентом в ЦКИ)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -703,7 +766,8 @@
       "sourceId": "sber25",
       "section": "Годовая консолидированная финансовая отчетность 2025",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "SBER",
@@ -714,7 +778,8 @@
       "sourceId": "sber-div-check",
       "section": "История выплат; даты реестров сверены с Финам",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -725,7 +790,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -736,7 +802,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -747,7 +814,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -758,7 +826,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -769,7 +838,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "86 069 − 38 779 млн RUB = 47,290 млрд RUB; строки комиссионных доходов и расходов годового отчета.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -780,7 +850,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -791,7 +862,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -801,8 +873,9 @@
       "unit": "%",
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
-      "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "note": "Не подтверждён единый сопоставимый состав операционных доходов и расходов CIR за весь период. Одних процентных/комиссионных доходов и административных расходов недостаточно: есть страхование, привлечение клиентов, прочие доходы и изменения IFRS 17/периметра Росбанка.",
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -813,7 +886,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -824,7 +898,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -835,7 +910,8 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -846,18 +922,39 @@
       "sourceId": "t21",
       "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
       "note": "Опубликованная базовая EPS / 10, единая база сплита апреля 2026.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
       "year": 2021,
       "metric": "dividend",
-      "value": null,
+      "value": 1.782,
       "unit": "₽/акцию",
       "sourceId": "t21",
-      "section": "Отчет группы, финансовый обзор и Financials, примечания 21 и 28",
-      "note": "Выплата USD 0,24/GDR подтверждена, но рублевый курс зачисления не подтвержден. Ноль не подставляется.",
-      "comparable": false
+      "section": "Примечание 28, PDF с.62 (разворот F-71/F-72)",
+      "note": "USD 0,24/GDR; эквивалент 17,82 ₽ до сплита приведён самим эмитентом при объявлении 10.03.2021; 1,782 ₽ после сплита. Расчётный эквивалент, не фактическое зачисление. Не добавлен в рыночный ряд полной доходности.",
+      "comparable": false,
+      "status": "calculated",
+      "provenance": {
+        "method": "Валютный эквивалент из отчёта / сплит",
+        "formula": "17.82 / 10; условный курс 17.82 / 0.24 = 74.25 ₽/USD",
+        "inputs": [
+          {
+            "label": "Валютный дивиденд",
+            "value": 0.24,
+            "unit": "USD/GDR",
+            "sourceId": "t21"
+          },
+          {
+            "label": "Рублёвый эквивалент в отчёте",
+            "value": 17.82,
+            "unit": "₽/GDR",
+            "sourceId": "t21"
+          }
+        ],
+        "limitations": "Курс объявления, а не брокерского поступления. Валютный и налоговый результат инвестора неизвестен."
+      }
     },
     {
       "company": "T",
@@ -868,7 +965,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -879,7 +977,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "Округление до целых млрд в первичном пресс-релизе.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -890,7 +989,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "Округление до целых млрд в первичном пресс-релизе.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -901,7 +1001,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -912,7 +1013,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -923,7 +1025,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -934,7 +1037,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -944,8 +1048,9 @@
       "unit": "%",
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
-      "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "note": "Не подтверждён единый сопоставимый состав операционных доходов и расходов CIR за весь период. Одних процентных/комиссионных доходов и административных расходов недостаточно: есть страхование, привлечение клиентов, прочие доходы и изменения IFRS 17/периметра Росбанка.",
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -956,7 +1061,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -967,7 +1073,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -978,18 +1085,33 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
       "year": 2022,
       "metric": "eps",
-      "value": null,
+      "value": 10.559,
       "unit": "₽/акцию",
-      "sourceId": "missing",
-      "section": "Годовые отчеты; https://t-technologies.ru/results/",
-      "note": "Нет проверенного сопоставимого значения в использованных документах. Опубликованная базовая EPS / 10, единая база сплита апреля 2026.",
-      "comparable": false
+      "sourceId": "t23full",
+      "section": "Прим.18, PDF с.83 / внутренняя с.63; пересмотр 2022: прим.36, PDF с.151",
+      "note": "Опубликованная базовая EPS; корпоративная корректировка 1:10. 2022 — пересмотренная сравнительная колонка IFRS 17 (ранее 105,81 ₽). Прибыль акционеров и средневзвешенные акции, не общая прибыль группы.",
+      "comparable": false,
+      "status": "actual",
+      "provenance": {
+        "method": "Публикация с корпоративной корректировкой",
+        "formula": "105.59 / 10",
+        "inputs": [
+          {
+            "label": "Опубликованная базовая EPS до сплита",
+            "value": 105.59,
+            "unit": "₽/акцию",
+            "sourceId": "t23full"
+          }
+        ],
+        "limitations": "Приведено к сплиту апреля 2026; GDR представляла одну обыкновенную акцию; учтён пересмотр IFRS 17."
+      }
     },
     {
       "company": "T",
@@ -1000,7 +1122,8 @@
       "sourceId": "t-div-check",
       "section": "История выплат; даты реестров сверены с ДОХОДЪ",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1011,7 +1134,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1022,7 +1146,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "Округление до целых млрд в первичном пресс-релизе.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1033,7 +1158,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "Округление до целых млрд в первичном пресс-релизе.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1044,7 +1170,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1055,7 +1182,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1066,7 +1194,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1077,7 +1206,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -1087,8 +1217,9 @@
       "unit": "%",
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
-      "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "note": "Не подтверждён единый сопоставимый состав операционных доходов и расходов CIR за весь период. Одних процентных/комиссионных доходов и административных расходов недостаточно: есть страхование, привлечение клиентов, прочие доходы и изменения IFRS 17/периметра Росбанка.",
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -1099,7 +1230,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1110,7 +1242,8 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1121,18 +1254,33 @@
       "sourceId": "t23",
       "section": "PDF с. 3–4 (внутренняя нумерация 3–4)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
       "year": 2023,
       "metric": "eps",
-      "value": null,
+      "value": 40.508,
       "unit": "₽/акцию",
-      "sourceId": "missing",
-      "section": "Годовые отчеты; https://t-technologies.ru/results/",
-      "note": "Нет проверенного сопоставимого значения в использованных документах. Опубликованная базовая EPS / 10, единая база сплита апреля 2026.",
-      "comparable": false
+      "sourceId": "t23full",
+      "section": "Прим.18, PDF с.83 / внутренняя с.63; пересмотр 2022: прим.36, PDF с.151",
+      "note": "Опубликованная базовая EPS; корпоративная корректировка 1:10. 2022 — пересмотренная сравнительная колонка IFRS 17 (ранее 105,81 ₽). Прибыль акционеров и средневзвешенные акции, не общая прибыль группы.",
+      "comparable": false,
+      "status": "actual",
+      "provenance": {
+        "method": "Публикация с корпоративной корректировкой",
+        "formula": "405.08 / 10",
+        "inputs": [
+          {
+            "label": "Опубликованная базовая EPS до сплита",
+            "value": 405.08,
+            "unit": "₽/акцию",
+            "sourceId": "t23full"
+          }
+        ],
+        "limitations": "Приведено к сплиту апреля 2026; GDR представляла одну обыкновенную акцию; учтён пересмотр IFRS 17."
+      }
     },
     {
       "company": "T",
@@ -1143,7 +1291,8 @@
       "sourceId": "t-div-check",
       "section": "История выплат; даты реестров сверены с ДОХОДЪ",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1154,7 +1303,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1165,7 +1315,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1176,7 +1327,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1187,7 +1339,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1198,7 +1351,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1209,7 +1363,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1220,7 +1375,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах. Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -1230,8 +1386,9 @@
       "unit": "%",
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
-      "note": "Нет проверенного сопоставимого значения в использованных документах. Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "note": "Не подтверждён единый сопоставимый состав операционных доходов и расходов CIR за весь период. Одних процентных/комиссионных доходов и административных расходов недостаточно: есть страхование, привлечение клиентов, прочие доходы и изменения IFRS 17/периметра Росбанка.",
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -1242,7 +1399,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк. Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1253,7 +1411,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1264,7 +1423,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1275,7 +1435,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк. Опубликованная базовая EPS / 10, единая база сплита апреля 2026.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1286,7 +1447,8 @@
       "sourceId": "t-div-check",
       "section": "История выплат; даты реестров сверены с ДОХОДЪ",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту. Сравнительная колонка 2024 из отчета 2025; периметр включает Росбанк.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1297,7 +1459,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1308,7 +1471,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1319,7 +1483,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1330,7 +1495,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1341,7 +1507,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1352,7 +1519,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Операционный ROE на прибыль акционеров без эффекта Яндекса; отличается от общей прибыли группы.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1363,7 +1531,8 @@
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
       "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -1373,8 +1542,9 @@
       "unit": "%",
       "sourceId": "missing",
       "section": "Годовые отчеты; https://t-technologies.ru/results/",
-      "note": "Нет проверенного сопоставимого значения в использованных документах.",
-      "comparable": false
+      "note": "Не подтверждён единый сопоставимый состав операционных доходов и расходов CIR за весь период. Одних процентных/комиссионных доходов и административных расходов недостаточно: есть страхование, привлечение клиентов, прочие доходы и изменения IFRS 17/периметра Росбанка.",
+      "comparable": false,
+      "status": "missing"
     },
     {
       "company": "T",
@@ -1385,7 +1555,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "Общий капитал Basel / RWA; не норматив Н1.0 отдельного банка. Сравнение методик условное.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1396,7 +1567,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1407,7 +1579,8 @@
       "sourceId": "t25press",
       "section": "PDF с. 3–4",
       "note": "",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1418,7 +1591,8 @@
       "sourceId": "t25",
       "section": "Баланс, отчет о прибыли; примечание 21 (PDF с. 85, внутренняя с. 78)",
       "note": "Опубликованная базовая EPS / 10, единая база сплита апреля 2026.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     },
     {
       "company": "T",
@@ -1429,7 +1603,8 @@
       "sourceId": "t-div-check",
       "section": "История выплат; даты реестров сверены с ДОХОДЪ",
       "note": "Календарный год реестра, не отчетный год прибыли; T приведена к сплиту.",
-      "comparable": false
+      "comparable": false,
+      "status": "actual"
     }
   ],
   "sources": [
@@ -1585,6 +1760,15 @@
       "standard": "Справочная информация",
       "accessed": "2026-10-28",
       "note": "Приведено к сплиту 1:10. USD 0,24 в 2021 не переведен по непроверенному курсу. Дивиденд за III квартал 2025 с реестром января 2026 не включен в 2025."
+    },
+    {
+      "id": "t23full",
+      "title": "TCS Group Holding PLC: audited consolidated IFRS 2023 (копия отчёта эмитента)",
+      "url": "https://cdn.financemarker.ru/reports/2023/MOEX/T/TCSG_2023_12_Y_IFRS.pdf",
+      "section": "Примечание 18, внутренняя с.63 / PDF с.83; примечание 36, PDF с.151",
+      "standard": "Аудированная консолидированная МСФО",
+      "accessed": "2026-11-09",
+      "note": "2022 сравнительные данные пересмотрены по IFRS 17. Базовая EPS не равна разводнённой. Средневзвешенные обыкновенные акции: 198703 тыс. в обоих годах. Источник — отчёт эмитента, размещённый в стороннем архиве."
     }
   ]
 }
