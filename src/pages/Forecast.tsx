@@ -3,6 +3,8 @@ import type { Mode, Scenario, Company } from '../data/types';
 import { companies } from '../data/types';
 import type { AnalysisModel } from '../services/model';
 import { Card, Notice, NumberField, SectionIntro, Tag } from '../components/ui';
+import { metricExplanation } from '../data/metric-help';
+import { Hint } from '../components/ui';
 import { fmt, pct, rub } from '../utils/format';
 export function Forecast({
   model,
@@ -70,6 +72,26 @@ export function Forecast({
           </div>
         </div>
       </Card>
+      <Card
+        title="Исторический и сценарный P/E"
+        subtitle="База — цена на конец 2025 / базовая EPS 2025; это ретроспективное значение"
+      >
+        {model.valuations
+          .filter((v) => v.year === 2025 && cs.includes(v.company))
+          .map((v) => (
+            <p key={v.company}>
+              <strong>
+                {companies[v.company].name}: {fmt(v.pe, 2)} ×
+              </strong>{' '}
+              = {rub(v.price, 2)} / EPS {rub(v.eps, 3)}. <Hint text={metricExplanation('pe')} />
+            </p>
+          ))}
+        <p className="footnote">
+          Сценарный P/E ниже — редактируемое предположение. При неизменной EPS увеличение P/E на 10%
+          повышает модельную цену на 10%. Цена₂/цена₁ = P/E₂ ÷ P/E₁; историческое значение не
+          означает целевое.
+        </p>
+      </Card>
       <div className="scenario-grid">
         {scenarios.map((s) => {
           const r = model.results.find((r) => r.id === s.id);
@@ -114,6 +136,16 @@ export function Forecast({
                   </div>
                   {r && (
                     <div className="scenario-security">
+                      <div>
+                        <span>Исторический P/E 2025</span>
+                        <b>
+                          {fmt(
+                            model.valuations.find((v) => v.company === c && v.year === 2025)?.pe,
+                            2,
+                          )}{' '}
+                          × → {fmt(s[c === 'SBER' ? 'peSBER' : 'peT'], 2)} × в сценарии
+                        </b>
+                      </div>
                       <div>
                         <span>Модельная цена</span>
                         <b>{rub(r[c].price, 2)}</b>

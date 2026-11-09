@@ -1,3 +1,4 @@
+import { ValuationHistory } from '../components/ValuationHistory';
 import { useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import type { Company, Metric, Mode } from '../data/types';
@@ -76,6 +77,7 @@ export function Financial({ data, mode }: { data: DataSet; mode: Mode }) {
           <TimeChart data={chart(['nii', 'fees'])} series={series(['nii', 'fees'])} xKey="year" />
         </Card>
       </div>
+      <ValuationHistory data={data} mode={mode} />
       <Card
         title="Финансовые показатели"
         subtitle="Нажмите на значение, чтобы проверить источник"

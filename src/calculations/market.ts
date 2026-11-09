@@ -1,4 +1,5 @@
 import type { Company, MarketData, Quote, ReturnKind, ReturnRow, Stats } from '../data/types';
+import { elapsedYears } from './period';
 import { cagr, mean, stdev, maxDrawdown, quantile } from './statistics';
 export function periodicReturn(
   previous: number | null,
@@ -28,11 +29,16 @@ export function wealthSeries(
   data: MarketData,
   company: Company,
   kind: ReturnKind,
+  period?: { from: string; till: string },
 ): { date: string; value: number | null }[] {
   let shares: number | null = null;
   return data.quotes.map((q) => {
     const p = q[company];
-    if (q.date < data.from || (kind === 'total' && q.date < data.totalAvailableFrom[company]))
+    if (
+      q.date < (period?.from ?? data.from) ||
+      (period && q.date > period.till) ||
+      (kind === 'total' && q.date < data.totalAvailableFrom[company])
+    )
       return { date: q.date, value: null };
     if (p === null) return { date: q.date, value: null };
     if (shares === null) shares = 1 / p;
@@ -45,28 +51,36 @@ export function wealthSeries(
     return { date: q.date, value: shares * p };
   });
 }
-export function monthlyReturns(data: MarketData, kind: ReturnKind): ReturnRow[] {
+export function monthlyReturns(
+  data: MarketData,
+  kind: ReturnKind,
+  period?: { from: string; till: string },
+): ReturnRow[] {
   const wealth = {
-    SBER: new Map(wealthSeries(data, 'SBER', kind).map((q) => [q.date, q.value])),
-    T: new Map(wealthSeries(data, 'T', kind).map((q) => [q.date, q.value])),
+    SBER: new Map(wealthSeries(data, 'SBER', kind, period).map((q) => [q.date, q.value])),
+    T: new Map(wealthSeries(data, 'T', kind, period).map((q) => [q.date, q.value])),
   };
   // Values are taken at common trading dates. A month with no common observation stays null.
   const prices = data.monthly;
-  return prices.slice(1).map((q, i) => {
-    const prev = prices[i];
-    const adjacent = monthIndex(q.date) - monthIndex(prev.date) === 1;
-    const result = (c: Company) =>
-      adjacent && q[c] !== null && prev[c] !== null
-        ? periodicReturn(wealth[c].get(prev.date) ?? null, wealth[c].get(q.date) ?? null)
-        : null;
-    return {
-      date: q.date,
-      SBER: result('SBER'),
-      T: result('T'),
-      priceSBER: adjacent ? periodicReturn(prev.SBER, q.SBER) : null,
-      priceT: adjacent ? periodicReturn(prev.T, q.T) : null,
-    };
-  });
+  return prices
+    .slice(1)
+    .map((q, i) => {
+      const prev = prices[i];
+      const adjacent = monthIndex(q.date) - monthIndex(prev.date) === 1;
+      const result = (c: Company) =>
+        adjacent && q[c] !== null && prev[c] !== null
+          ? periodicReturn(wealth[c].get(prev.date) ?? null, wealth[c].get(q.date) ?? null)
+          : null;
+      return {
+        date: q.date,
+        from: prev.date,
+        SBER: result('SBER'),
+        T: result('T'),
+        priceSBER: adjacent ? periodicReturn(prev.SBER, q.SBER) : null,
+        priceT: adjacent ? periodicReturn(prev.T, q.T) : null,
+      };
+    })
+    .filter((r) => !period || (r.from >= period.from && r.date <= period.till));
 }
 export function paired(rows: ReturnRow[]) {
   const valid = rows.filter(
@@ -85,9 +99,12 @@ export function statistics(
   const values = wealth.filter((r): r is { date: string; value: number } => r.value !== null);
   const a = values[0],
     b = values.at(-1);
-  const years = a && b ? (Date.parse(b.date) - Date.parse(a.date)) / (365.25 * 86400000) : 0;
+  const years = a && b && a.date !== b.date ? elapsedYears(a.date, b.date) : 0;
   return {
     n: returns.length,
+    from: a?.date ?? null,
+    till: b?.date ?? null,
+    years,
     monthlyMean: m,
     annualMean: m * 12,
     monthlyVol: sd,

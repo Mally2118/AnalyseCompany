@@ -70,6 +70,7 @@ export interface MarketData {
   audit: { overlap: number; maxRatioError: number; cors: string };
 }
 export interface ReturnRow {
+  from: string;
   date: string;
   SBER: number | null;
   T: number | null;
@@ -77,6 +78,9 @@ export interface ReturnRow {
   priceT: number | null;
 }
 export interface Stats {
+  from: string | null;
+  till: string | null;
+  years: number;
   n: number;
   monthlyMean: number;
   annualMean: number;

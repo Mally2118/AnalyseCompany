@@ -35,6 +35,7 @@ import { Stability } from './pages/Stability';
 import { Sources } from './pages/Sources';
 import { exportCSV, exportPDF, exportXLSX } from './utils/export';
 import { Notice } from './components/ui';
+import { MetricGuide } from './components/MetricGuide';
 import { date } from './utils/format';
 const pages = [
   { id: 'overview', label: 'Обзор', icon: LayoutDashboard },
@@ -110,7 +111,7 @@ function Dashboard({ data }: { data: DataSet }) {
     [exports, setExports] = useState(false),
     [exportError, setExportError] = useState(''),
     [busy, setBusy] = useState(false);
-  const model = useModel(data, kind, start, rf, weight, amount, scenarios);
+  const model = useModel(data, kind, start, rf, weight, amount, scenarios, horizon);
   useEffect(() => {
     const update = () => {
       setPage(getPage());
@@ -360,13 +361,21 @@ function Dashboard({ data }: { data: DataSet }) {
             <span className="snapshot-label">Котировки на 30.12.2025</span>
           </div>
           {exportError && <Notice tone="warn">{exportError}</Notice>}
-          {kind === 'total' && start === 2021 && (
+          {model.period.limited && (
             <Notice tone="warn">
               Полная доходность T за 2021 не рассчитана: не подтверждён рублёвый курс USD-дивиденда.
-              Совместная портфельная выборка начинается в 2022. Для одинакового периода обеих акций
-              выберите 2023–2025.
+              Для обоих режимов и обеих акций используется общий период {date(model.period.from)} —{' '}
+              {date(model.period.till)} ({model.period.years.toFixed(2)} года). Пятилетний ценовой
+              результат показан отдельно.{' '}
+              <button className="text-button" onClick={() => setStart(2023)}>
+                Выбрать общий период 2023–2025
+              </button>
             </Notice>
           )}
+          <p className="analysis-dates">
+            Фактическая база расчётов: {date(model.period.from)} — {date(model.period.till)} ·{' '}
+            {model.pair.rows.length} общих месячных интервалов
+          </p>
           {page === 'overview' && (
             <Overview data={data} model={model} mode={mode} navigate={navigate} />
           )}{' '}
@@ -387,6 +396,7 @@ function Dashboard({ data }: { data: DataSet }) {
           )}{' '}
           {page === 'stability' && <Stability data={data} model={model} mode={mode} />}{' '}
           {page === 'sources' && <Sources data={data} />}
+          <MetricGuide />
           <footer className="main-footer">
             <span>
               <ChartNoAxesCombined size={14} />

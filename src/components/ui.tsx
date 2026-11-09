@@ -43,18 +43,23 @@ export function KPI({
   color = 'mint',
   icon,
   children,
+  hint,
 }: {
   label: string;
   value: string;
   detail: string;
   color?: string;
+  hint?: string;
   icon?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <div className="card kpi">
       <div className="kpi-top">
-        <span>{label}</span>
+        <span>
+          {label}
+          {hint && <Hint text={hint} />}
+        </span>
         <span className={`kpi-icon ${color}`}>{icon ?? <ArrowUpRight size={18} />}</span>
       </div>
       <div className="kpi-value">{value}</div>

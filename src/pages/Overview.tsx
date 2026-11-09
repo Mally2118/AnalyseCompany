@@ -10,11 +10,12 @@ import type { Mode, Company } from '../data/types';
 import { companies, years } from '../data/types';
 import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
-import { Card, KPI, SectionIntro, Tag } from '../components/ui';
+import { Card, KPI, SectionIntro, Tag, Hint } from '../components/ui';
 import { TimeChart, companySeries } from '../charts/Charts';
 import { fact, marketRisk, stability } from '../calculations/analysis';
 import { growth } from '../calculations/statistics';
-import { fmt, pct, rub } from '../utils/format';
+import { metricExplanation } from '../data/metric-help';
+import { fmt, pct, rub, date } from '../utils/format';
 export function Overview({
   data,
   model,
@@ -67,9 +68,10 @@ export function Overview({
           )}
         </KPI>
         <KPI
-          label="Исторический CAGR"
+          label="Среднегодовая доходность (CAGR)"
+          hint={metricExplanation('cagr')}
           value={pct(s?.cagr)}
-          detail={`${companies[c].short} · геометрическая доходность`}
+          detail={`${companies[c].short} · ${date(model.period.from)} — ${date(model.period.till)}`}
           icon={<ChartNoAxesCombined size={18} />}
           color="blue"
         />
@@ -87,6 +89,90 @@ export function Overview({
           icon={<ShieldCheck size={18} />}
           color="purple"
         />
+      </div>
+      <div className="grid-two">
+        <Card
+          title="Среднегодовая доходность (CAGR)"
+          subtitle={`Одинаковые даты и капитал: ${date(model.period.from)} — ${date(model.period.till)}`}
+        >
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Акция</th>
+                  <th>
+                    Ценовая <Hint text={metricExplanation('cagr')} />
+                  </th>
+                  <th>
+                    С дивидендами <Hint text={metricExplanation('total')} />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {cs.map((c) => (
+                  <tr key={c}>
+                    <th>{companies[c].name}</th>
+                    <td data-testid={`cagr-price-${c}`}>
+                      {pct(model.comparison[c].price?.cagr, 2)}
+                    </td>
+                    <td data-testid={`cagr-total-${c}`}>
+                      {pct(model.comparison[c].total?.cagr, 2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="footnote">
+            R = ((V₁/V₀)^(1/n) − 1) × 100%; n = фактические дни / 365,25 ={' '}
+            {fmt(model.period.years, 4)} года. В дивидендном режиме V — стоимость с
+            реинвестированием.
+          </p>
+          {model.period.limited && (
+            <p className="footnote">
+              За полный период 2021–2025 ценовой CAGR:{' '}
+              {cs.map((c) => `${c} ${pct(model.fiveYear[c].price?.cagr, 2)}`).join('; ')}. Полный
+              пятилетний дивидендный ряд T отсутствует; он не подменяется четырьмя годами.
+            </p>
+          )}
+        </Card>
+        <Card
+          title="P/E на историческую дату"
+          subtitle="Закрытие 30.12.2025 / базовая годовая EPS · ретроспективно"
+        >
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Акция</th>
+                  <th>Цена, ₽</th>
+                  <th>
+                    EPS, ₽ <Hint text={metricExplanation('eps')} />
+                  </th>
+                  <th>
+                    P/E <Hint text={metricExplanation('pe')} />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {model.valuations
+                  .filter((v) => v.year === 2025 && cs.includes(v.company))
+                  .map((v) => (
+                    <tr key={v.company}>
+                      <th>{v.company}</th>
+                      <td>{fmt(v.price, 2)}</td>
+                      <td>{fmt(v.eps, 3)}</td>
+                      <td>{fmt(v.pe, 2)} ×</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="footnote">
+            Годовая EPS опубликована в 2026: этот P/E не был доступен инвестору в день цены. Цена и
+            EPS T приведены к одной базе сплита; низкий P/E сам по себе не означает недооценку.
+          </p>
+        </Card>
       </div>
       <div className="dashboard-main">
         <Card

@@ -1,8 +1,10 @@
 import { ArrowRight, Sparkles, ShieldCheck, SlidersHorizontal } from 'lucide-react';
-import { Card, KPI, Notice, NumberField, SectionIntro, Tag } from '../components/ui';
+import { Card, KPI, Notice, NumberField, SectionIntro, Tag, Hint } from '../components/ui';
 import { FrontierChart, TimeChart } from '../charts/Charts';
 import type { AnalysisModel } from '../services/model';
-import { fmt, pct, rub } from '../utils/format';
+import { metricExplanation } from '../data/metric-help';
+import { investmentLimits } from '../calculations/calculator';
+import { fmt, pct, rub, date } from '../utils/format';
 import { compound } from '../calculations/statistics';
 export interface PortfolioControls {
   model: AnalysisModel;
@@ -94,7 +96,15 @@ export function PortfolioPage(p: PortfolioControls) {
           />
           <div className="portfolio-result">
             <div>
-              <span>Годовая доходность</span>
+              <span>
+                Исторический CAGR портфеля <Hint text={metricExplanation('cagr')} />
+              </span>
+              <strong>{pct(p.model.historical.selected.cagr, 2)}</strong>
+            </div>
+            <div>
+              <span>
+                Оценка доходности · арифметическая <Hint text={metricExplanation('arithmetic')} />
+              </span>
               <strong className="positive">{pct(s.mean)}</strong>
             </div>
             <div>
@@ -140,6 +150,62 @@ export function PortfolioPage(p: PortfolioControls) {
           </button>
         </Card>
       </div>
+      <Card
+        title="Арифметическая оценка и исторический CAGR"
+        subtitle={`База ${date(p.model.period.from)} — ${date(p.model.period.till)} · одинаковые даты и общая выборка для обоих активов`}
+      >
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Актив / портфель</th>
+                <th>12 × μ месяца</th>
+                <th>CAGR фактической стоимости</th>
+                <th>σ год</th>
+                <th>Sharpe</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(['SBER', 'T'] as const).map((c) => (
+                <tr key={c}>
+                  <th>{c} · 100%</th>
+                  <td>{pct(p.model.stats[c]?.annualMean, 2)}</td>
+                  <td>{pct(p.model.stats[c]?.cagr, 2)}</td>
+                  <td>{pct(p.model.stats[c]?.annualVol, 2)}</td>
+                  <td>{fmt(p.model.stats[c]?.sharpe, 3)}</td>
+                </tr>
+              ))}
+              <tr>
+                <th>Ваш портфель</th>
+                <td>{pct(s.mean, 2)}</td>
+                <td>{pct(p.model.historical.selected.cagr, 2)}</td>
+                <td>{pct(s.risk, 2)}</td>
+                <td>{fmt(s.sharpe, 3)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="footnote">
+          Для Сбера за 2023–2025 значения 27,54% без дивидендов и 38,83% с дивидендами —
+          историческое среднее месяца × 12, а не стабильная ожидаемая ставка. Кризисные движения не
+          удаляются и не ограничиваются. CAGR учитывает реальную длительность периода и сложный
+          процент.
+        </p>
+        <p className="footnote">
+          Пятилетняя база 30.12.2020–30.12.2025 при текущих весах: арифметическая оценка{' '}
+          {pct(p.model.fiveYearPortfolio?.annualMean, 2)}, CAGR{' '}
+          {pct(p.model.fiveYearPortfolio?.cagr, 2)}.{' '}
+          {p.model.fiveYearPortfolio === null
+            ? 'Для пятилетнего портфеля с T нет полного дивидендного ряда; частичный результат не называется пятилетним.'
+            : ''}
+        </p>
+        <p className="footnote">
+          Модель Марковица использует {p.model.pair.rows.length} общих месячных интервалов; февраль
+          и март 2024 пропущены из-за отсутствующего конца февраля. Дневной портфельный CAGR
+          удерживает позиции через паузу: ребалансировка только в доступные общие концы месяцев. При
+          0% или 100% результат совпадает с соответствующим активом.
+        </p>
+      </Card>
       <div className="grid-two">
         <Card
           title="Портфель минимального риска"
@@ -158,7 +224,7 @@ export function PortfolioPage(p: PortfolioControls) {
           </div>
           <div className="triplet">
             <div>
-              <span>Доходность</span>
+              <span>Арифм. оценка / год</span>
               <b>{pct(m.min.mean)}</b>
             </div>
             <div>
@@ -188,7 +254,7 @@ export function PortfolioPage(p: PortfolioControls) {
           </div>
           <div className="triplet">
             <div>
-              <span>Доходность</span>
+              <span>Арифм. оценка / год</span>
               <b>{pct(m.max.mean)}</b>
             </div>
             <div>
@@ -316,13 +382,37 @@ export function Calculator(p: PortfolioControls) {
           </p>
         </Card>
         <Card title="Параметры инвестиций" action={<SlidersHorizontal size={17} />}>
+          <div className="amount-control">
+            <label htmlFor="investment-amount-range">
+              Сумма инвестиций — ползунок <strong>{rub(p.amount)}</strong>
+            </label>
+            <input
+              id="investment-amount-range"
+              aria-label="Сумма инвестиций — ползунок"
+              aria-valuetext={rub(p.amount)}
+              type="range"
+              min={investmentLimits.min}
+              max={investmentLimits.max}
+              step={investmentLimits.step}
+              value={Math.round(p.amount / investmentLimits.step) * investmentLimits.step}
+              onChange={(e) => p.setAmount(Number(e.target.value))}
+            />
+            <div className="range-labels">
+              <span>{rub(investmentLimits.min)}</span>
+              <span>{rub(investmentLimits.max)}</span>
+            </div>
+            <p className="footnote">
+              Шаг ползунка {rub(investmentLimits.step)}. Ручной ввод ниже сохраняет точную сумму;
+              положение ползунка округлено до шага.
+            </p>
+          </div>
           <NumberField
             label="Сумма инвестиций"
             value={p.amount}
             onChange={p.setAmount}
-            min={1000}
-            max={1000000000}
-            step={1000}
+            min={investmentLimits.min}
+            max={investmentLimits.max}
+            step={1}
             suffix="₽"
           />
           <NumberField
@@ -359,18 +449,19 @@ export function Calculator(p: PortfolioControls) {
           <div className="investment-split">
             <div>
               <span>В Сбербанк</span>
-              <b>{rub(p.amount * p.weight)}</b>
+              <b>{rub(p.model.allocation.SBER)}</b>
             </div>
             <div>
               <span>В Т-Технологии</span>
-              <b>{rub(p.amount * (1 - p.weight))}</b>
+              <b>{rub(p.model.allocation.T)}</b>
             </div>
           </div>
         </Card>
       </div>
       <div className="kpi-grid three">
         <KPI
-          label="Историческая доходность / год"
+          label="Арифметическая оценка / год"
+          hint={metricExplanation('arithmetic')}
           value={pct(s?.mean)}
           detail="Арифметическая, на общей месячной выборке"
         />
@@ -405,6 +496,12 @@ export function Calculator(p: PortfolioControls) {
           );
         })}
       </div>
+      <Card
+        title="Результат для вашего капитала"
+        subtitle="Пересчитывается при изменении суммы, весов и горизонта"
+      >
+        <p className="capital-conclusion">{p.model.conclusions.at(-1)}</p>
+      </Card>
       <Notice tone="warn">
         Историческая средняя не гарантирует будущую доходность. Сценарии — редактируемые допущения
         EPS × P/E с условными дивидендами. Налоги, комиссии, лоты и инфляция не учитываются; дробные

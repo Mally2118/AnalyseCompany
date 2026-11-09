@@ -58,3 +58,36 @@ export function portfolioReturns(a: number[], b: number[], w: number) {
   if (a.length !== b.length || w < 0 || w > 1) throw new Error('Несинхронные доходности или вес');
   return a.map((v, i) => w * v + (1 - w) * b[i]);
 }
+
+/** Daily marked-to-market history. Rebalance only at observed common month-end dates.
+ * Missing months are held through, never filled with zero returns or removed from elapsed time.
+ */
+export function portfolioWealth(
+  a: { date: string; value: number | null }[],
+  b: { date: string; value: number | null }[],
+  weight: number,
+  rebalancingDates: readonly string[],
+) {
+  if (!Number.isFinite(weight) || weight < 0 || weight > 1) throw new Error('Недопустимый вес');
+  const dates = new Set(rebalancingDates),
+    other = new Map(b.map((q) => [q.date, q.value]));
+  let unitsA: number | null = null,
+    unitsB: number | null = null;
+  return a.map((q) => {
+    const av = q.value,
+      bv = other.get(q.date) ?? null;
+    if (unitsA === null || unitsB === null) {
+      if (av === null || bv === null) return { date: q.date, value: null };
+      unitsA = weight / av;
+      unitsB = (1 - weight) / bv;
+    }
+    if ((av === null && unitsA !== 0) || (bv === null && unitsB !== 0))
+      return { date: q.date, value: null };
+    const value = unitsA * (av ?? 0) + unitsB * (bv ?? 0);
+    if (dates.has(q.date) && av !== null && bv !== null) {
+      unitsA = (weight * value) / av;
+      unitsB = ((1 - weight) * value) / bv;
+    }
+    return { date: q.date, value };
+  });
+}

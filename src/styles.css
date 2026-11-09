@@ -2035,3 +2035,57 @@ select {
     color: #222;
   }
 }
+.analysis-dates {
+  font-size: 11px;
+  color: var(--muted);
+  margin: -4px 0 22px;
+  line-height: 1.7;
+}
+.metric-guide {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.metric-guide summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+.metric-guide code {
+  font-size: 11px;
+  display: block;
+  overflow-wrap: anywhere;
+}
+.metric-guide p {
+  font-size: 11px;
+  margin-top: 8px;
+  line-height: 1.7;
+}
+.amount-control {
+  margin: 18px 0;
+}
+.amount-control label {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.amount-control label strong {
+  color: var(--text);
+}
+.amount-control input[type='range'] {
+  width: 100%;
+  accent-color: var(--mint);
+  margin-top: 16px;
+  cursor: pointer;
+}
+.kpi-top > span:first-child .hint {
+  margin-left: 5px;
+}
+.portfolio-result > div {
+  gap: 14px;
+}
+.portfolio-result > div > span {
+  max-width: 65%;
+}

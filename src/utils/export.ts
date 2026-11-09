@@ -2,7 +2,7 @@ import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
 import type { Company, ReturnKind, Scenario } from '../data/types';
 import { companies, metrics, years } from '../data/types';
-import { wealthSeries } from '../calculations/market';
+import { metricHelp } from '../data/metric-help';
 import { escapeHtml as esc, fmt, pct, rub } from './format';
 export interface ExportContext {
   data: DataSet;
@@ -38,7 +38,7 @@ export function csvString(rows: unknown[][]) {
       .join('\r\n')
   );
 }
-export function exportCSV(ctx: ExportContext) {
+export function financialCSVRows(ctx: ExportContext) {
   const sources = [...ctx.data.financial.sources, ...ctx.data.market.sources];
   const rows = [
     [
@@ -67,11 +67,28 @@ export function exportCSV(ctx: ExportContext) {
       ];
     }),
   ];
+  rows.push(
+    ...ctx.model.valuations.map((v) => [
+      companies[v.company].name,
+      v.year,
+      'P/E ретроспективный',
+      v.pe,
+      '×',
+      `${v.epsUrl} ; ${v.priceUrl}`,
+      `Цена ${v.priceDate ?? 'нет'}: ${v.price ?? 'нет'}; базовая EPS: ${v.eps ?? 'нет'}`,
+      'МСФО / MOEX',
+      `${v.note} ${v.basis}; ${v.pe === null ? v.status : 'P/E = Price / EPS'}`,
+    ]),
+  );
+  return rows;
+}
+export function exportCSV(ctx: ExportContext) {
   download(
-    new Blob([csvString(rows)], { type: 'text/csv;charset=utf-8' }),
+    new Blob([csvString(financialCSVRows(ctx))], { type: 'text/csv;charset=utf-8' }),
     'InvestAnalytics-финансы.csv',
   );
 }
+
 export async function exportXLSX(ctx: ExportContext) {
   const XLSX = await import('xlsx');
   const wb = buildWorkbook(XLSX, ctx);
@@ -152,8 +169,8 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
     ...data.market.quotes.map((q) => [q.date, q.SBER, q.T, q.tOriginal, q.tInstrument, q.note]),
   ]);
   const wealth = {
-    SBER: new Map(wealthSeries(data.market, 'SBER', ctx.kind).map((q) => [q.date, q.value])),
-    T: new Map(wealthSeries(data.market, 'T', ctx.kind).map((q) => [q.date, q.value])),
+    SBER: new Map(model.wealth.SBER.map((q) => [q.date, q.value])),
+    T: new Map(model.wealth.T.map((q) => [q.date, q.value])),
   };
   sheet('Цены и доходности', [
     [
@@ -199,8 +216,8 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
   const rawStats = [
     ...(['SBER', 'T'] as Company[]).map((c, i) => {
       const s = model.stats[c],
-        column = i === 0 ? 'J' : 'K',
-        range = `'Цены и доходности'!${column}2:${column}${model.rows.length + 1}`;
+        column = i === 0 ? 'B' : 'C',
+        range = `'Синхронные доходности'!${column}2:${column}${end}`;
       return [
         c,
         s?.n ?? 0,
@@ -297,6 +314,7 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
       'Вложено',
       'Стоимость 1 год',
       'Результат 1 год',
+      'Исторический P/E 2025 (ретросп.)',
     ],
     ...ctx.scenarios.flatMap((s, i) =>
       (['SBER', 'T'] as Company[]).map((c, j) => {
@@ -321,10 +339,99 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
           formula(`L${r}*'Методика'!B8`, w * ctx.amount),
           formula(`M${r}*(1+K${r})`, result ? w * ctx.amount * (1 + result.return) : null),
           formula(`N${r}-M${r}`, result ? w * ctx.amount * result.return : null),
+          formula(
+            `G${r}/C${r}`,
+            model.valuations.find((v) => v.company === c && v.year === 2025)?.pe ?? null,
+          ),
         ];
       }),
     ),
   ]);
+  sheet('P-E ретроспективный', [
+    [
+      'Компания',
+      'Год',
+      'Цена, ₽',
+      'Дата цены',
+      'Базовая EPS, ₽',
+      'P/E',
+      'Источник EPS',
+      'Источник цены',
+      'Оговорка',
+    ],
+    ...model.valuations.map((v, i) => {
+      const row = i + 2,
+        epsIndex =
+          data.financial.facts.findIndex(
+            (f) => f.company === v.company && f.year === v.year && f.metric === 'eps',
+          ) + 2;
+      const priceIndex = data.market.quotes.findIndex((q) => q.date === v.priceDate) + 2;
+      return [
+        v.company,
+        v.year,
+        formula(`'Дневные цены'!${v.company === 'SBER' ? 'B' : 'C'}${priceIndex}`, v.price),
+        v.priceDate,
+        formula(`'Исходные финансы'!D${epsIndex}`, v.eps),
+        formula(`C${row}/E${row}`, v.pe),
+        v.epsUrl,
+        v.priceUrl,
+        `${v.note} ${v.basis}; ${v.pe === null ? v.status : ''}`,
+      ];
+    }),
+  ]);
+  sheet('Сопоставимые доходности', [
+    ['Актив', 'Тип', 'Начало', 'Конец', 'Лет', 'V0', 'V1', 'CAGR', 'n месяцев', '12 × μ месяца'],
+    ...(['SBER', 'T'] as Company[]).flatMap((c, i) =>
+      (['price', 'total'] as const).map((kind, j) => {
+        const stat = model.comparison[c][kind],
+          row = i * 2 + j + 2;
+        return [
+          c,
+          kind === 'price' ? 'Ценовая' : 'Полная',
+          model.period.from,
+          model.period.till,
+          model.period.years,
+          1,
+          stat?.wealth ?? null,
+          formula(`(G${row}/F${row})^(1/E${row})-1`, stat?.cagr ?? null),
+          stat?.n ?? 0,
+          stat?.annualMean ?? null,
+        ];
+      }),
+    ),
+  ]);
+  const navT = new Map(model.wealth.T.map((q) => [q.date, q.value]));
+  sheet('История портфеля', [
+    ['Дата', 'Стоимость портфеля', 'Стоимость SBER', 'Стоимость T'],
+    ...model.historical.selected.series.map((q) => [
+      q.date,
+      q.value,
+      model.wealth.SBER.find((a) => a.date === q.date)?.value ?? null,
+      navT.get(q.date) ?? null,
+    ]),
+  ]);
+  const meta = wb.Sheets['Методика'];
+  const extras = [
+    ['Фактическое начало', model.period.from],
+    ['Фактический конец', model.period.till],
+    ['Лет, ACT/365,25', model.period.years],
+    [
+      'CAGR портфеля',
+      formula(
+        `('История портфеля'!B${model.historical.selected.series.length + 1}/'История портфеля'!B2)^(1/${model.period.years})-1`,
+        model.historical.selected.cagr,
+      ),
+    ],
+    [
+      'Полнота пятилетних данных',
+      model.period.limited
+        ? 'T: дивиденды 2021 неполны; сравниваем с конца 2021'
+        : 'Общая база выбрана без ограничения',
+    ],
+    ['Пятилетняя арифм. оценка', model.fiveYearPortfolio?.annualMean ?? null],
+    ['Пятилетний CAGR портфеля', model.fiveYearPortfolio?.cagr ?? null],
+  ];
+  XLSX.utils.sheet_add_aoa(meta, extras, { origin: -1 });
   sheet('Источники', [
     ['Код', 'Название', 'URL', 'Раздел', 'Стандарт', 'Дата проверки', 'Примечание'],
     ...[...data.financial.sources, ...data.market.sources]
@@ -429,15 +536,17 @@ export function reportHTML(ctx: ExportContext) {
         ],
       )
     : '<p>Недостаточно данных</p>';
-  const wealth = model.wealth.SBER.filter((_, i) => i % 8 === 0).map((q) => ({
-    label: q.date,
-    a: q.value === null ? null : q.value * 100,
-    b:
-      (model.wealth.T.find((t) => t.date === q.date)?.value ?? null) === null
-        ? null
-        : model.wealth.T.find((t) => t.date === q.date)!.value! * 100,
-  }));
-  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>InvestAnalytics — аналитический отчёт</title><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}body{font:12px/1.55 Arial,sans-serif;color:#172338;max-width:760px;margin:30px auto}h1{font-size:30px}h2{font-size:19px;margin:30px 0 12px;border-bottom:1px solid #ccd4df;padding-bottom:8px}h3{font-size:15px}table{border-collapse:collapse;width:100%;font-size:10px;margin:14px 0}th,td{border:1px solid #d1d7df;padding:6px;text-align:left}th{background:#edf2f6}thead{display:table-header-group}tr,figure{break-inside:avoid}a{color:#3154a2;overflow-wrap:anywhere}li{margin:6px 0}.muted{color:#58677b}.cover{border-top:5px solid #138f79;padding-top:20px}.controls{background:#e9eef5;padding:16px;display:flex;gap:15px;align-items:center}button{cursor:pointer;padding:9px 18px;border:0;border-radius:5px;background:#172338;color:white}.notes{font-size:10px}.frontier-table{font-size:9px}@media print{body{margin:0;max-width:none}.controls{display:none}h2{break-after:avoid}}svg{max-width:100%}</style></head><body><div class="controls"><button onclick="window.print()">Сохранить PDF / печать</button><span>В окне печати выберите «Сохранить как PDF». Формат A4.</span></div><div class="cover"><p>БИЗНЕС-АНАЛИТИКА И ПРОГНОЗИРОВАНИЕ · УНИВЕРСИТЕТСКИЙ ПРОЕКТ</p><h1>InvestAnalytics</h1><p>Финансовый и инвестиционный анализ ПАО «Сбербанк» и МКПАО «Т-Технологии»</p><p>База исследования: 2021–2025. Рыночная модель: ${ctx.start}–2025. Сформировано ${new Date().toLocaleDateString('ru-RU')}.</p><p>Моделируемый капитал: ${rub(ctx.amount)}; веса ${pct(ctx.weight)} SBER / ${pct(1 - ctx.weight)} T; горизонт калькулятора, лет: ${ctx.horizon}.</p><p>Тип доходности: ${ctx.kind === 'price' ? 'ценовая, дивиденды не включены' : 'полная, условное реинвестирование дивидендов в дату реестра'}; учебная эффективная Rf = ${pct(ctx.rf)} годовых.</p></div><h2>1. Объект, данные и методика</h2><p>Обыкновенные SBER и преемственный ряд TCSG → T. Т приведена к сплиту 1:10 апреля 2026. Отчетность относится к банковским группам; показатели EBITDA, текущей ликвидности и модель Альтмана не применяются.</p><p>Финансовые данные проверены ${esc(data.financial.updatedAt)}. Рыночная выгрузка ${esc(data.market.updatedAt)}; последние цены ${esc(data.market.till)}. Всего ${data.market.quotes.length} дневных дат; ${model.pair.rows.length} пар месячных доходностей. Корреляция ${fmt(model.correlation, 4)}.</p><p>Изменение периметра Т в 2024, разовые эффекты Яндекса в 2025, МСФО 17 и ограниченное раскрытие Сбера требуют чтения примечаний. Финансовые значения не заменяются оценками при пропусках.</p><h2>2. Финансовые показатели за пять лет</h2>${financial}${svgChart(
+  const wealth = model.wealth.SBER.filter((_, i, rows) => i % 8 === 0 || i === rows.length - 1).map(
+    (q) => ({
+      label: q.date,
+      a: q.value === null ? null : q.value * 100,
+      b:
+        (model.wealth.T.find((t) => t.date === q.date)?.value ?? null) === null
+          ? null
+          : model.wealth.T.find((t) => t.date === q.date)!.value! * 100,
+    }),
+  );
+  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>InvestAnalytics — аналитический отчёт</title><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}body{font:12px/1.55 Arial,sans-serif;color:#172338;max-width:760px;margin:30px auto}h1{font-size:30px}h2{font-size:19px;margin:30px 0 12px;border-bottom:1px solid #ccd4df;padding-bottom:8px}h3{font-size:15px}table{border-collapse:collapse;width:100%;font-size:10px;margin:14px 0}th,td{border:1px solid #d1d7df;padding:6px;text-align:left}th{background:#edf2f6}thead{display:table-header-group}tr,figure{break-inside:avoid}a{color:#3154a2;overflow-wrap:anywhere}li{margin:6px 0}.muted{color:#58677b}.cover{border-top:5px solid #138f79;padding-top:20px}.controls{background:#e9eef5;padding:16px;display:flex;gap:15px;align-items:center}button{cursor:pointer;padding:9px 18px;border:0;border-radius:5px;background:#172338;color:white}.notes{font-size:10px}.frontier-table{font-size:9px}@media print{body{margin:0;max-width:none}.controls{display:none}h2{break-after:avoid}}svg{max-width:100%}</style></head><body><div class="controls"><button onclick="window.print()">Сохранить PDF / печать</button><span>В окне печати выберите «Сохранить как PDF». Формат A4.</span></div><div class="cover"><p>БИЗНЕС-АНАЛИТИКА И ПРОГНОЗИРОВАНИЕ · УНИВЕРСИТЕТСКИЙ ПРОЕКТ</p><h1>InvestAnalytics</h1><p>Финансовый и инвестиционный анализ ПАО «Сбербанк» и МКПАО «Т-Технологии»</p><p>База исследования: 2021–2025. Запрошенный период: ${ctx.start}–2025. Фактическая рыночная модель: ${esc(model.period.from)} — ${esc(model.period.till)} (${fmt(model.period.years, 4)} года). Сформировано ${new Date().toLocaleDateString('ru-RU')}.</p><p>Моделируемый капитал: ${rub(ctx.amount)}; веса ${pct(ctx.weight)} SBER / ${pct(1 - ctx.weight)} T; горизонт калькулятора, лет: ${ctx.horizon}.</p><p>Тип доходности: ${ctx.kind === 'price' ? 'ценовая, дивиденды не включены' : 'полная, условное реинвестирование дивидендов в дату реестра'}; учебная эффективная Rf = ${pct(ctx.rf)} годовых.</p></div><h2>1. Объект, данные и методика</h2><p>Обыкновенные SBER и преемственный ряд TCSG → T. Т приведена к сплиту 1:10 апреля 2026. Отчетность относится к банковским группам; показатели EBITDA, текущей ликвидности и модель Альтмана не применяются.</p><p>Финансовые данные проверены ${esc(data.financial.updatedAt)}. Рыночная выгрузка ${esc(data.market.updatedAt)}; последние цены ${esc(data.market.till)}. Всего ${data.market.quotes.length} дневных дат; ${model.pair.rows.length} пар месячных доходностей. Корреляция ${fmt(model.correlation, 4)}.</p><p>Изменение периметра Т в 2024, разовые эффекты Яндекса в 2025, МСФО 17 и ограниченное раскрытие Сбера требуют чтения примечаний. Финансовые значения не заменяются оценками при пропусках.</p><h2>2. Финансовые показатели за пять лет</h2>${financial}${svgChart(
     years.map((y) => ({
       label: String(y),
       a: annual('SBER', 'profit', y),
@@ -451,7 +560,16 @@ export function reportHTML(ctx: ExportContext) {
       b: annual('T', 'equity', y),
     })),
     'Собственный капитал, млрд ₽',
-  )}<h2>3. Доходность и риск</h2>${table(['Актив', 'n', 'μ месяц', 'μ год', 'CAGR', 'σ год', 'Sharpe', 'MaxDD', 'VaR95'], stats)}${svgChart(wealth, 'Накопленная стоимость, начальная = 100')}<p>R = (Pₜ − Pₜ₋₁ + Dₜ) / Pₜ₋₁; полная стоимость в модели учитывает отдельные ежедневные дивидендные события и дробное реинвестирование. Средняя годовая = 12 × μ месяца; CAGR = (Vкон / Vнач)^(365,25 / дни) − 1. σ месяца = √[Σ(R − μ)² / (n − 1)], σ года = σ месяца × √12. Cov = Σ[(Rs − μs)(Rt − μt)] / (n − 1). VaR95 — отрицательный 5%-квантиль месячных доходностей, линейная интерполяция, n ≥ 24; не максимальный возможный убыток. MaxDD по дневным закрытиям.</p><h2>4. Модель Марковица и максимум Sharpe</h2><p>E(Rp) = wE(Rs) + (1 − w)E(Rt). σp² = w²σs² + (1 − w)²σt² + 2w(1 − w)Cov(s,t). Перебираются 101 вес с шагом 1%, без плеча. Эффективная граница выделяется по недоминируемости. Эффективные риск и доходность относятся к выбранному портфелю.</p><p>Sharpe = (μ месяца − Rf месяца) / σ месяца × √12; Rf месяца = (1 + Rf года)^(1/12) − 1. Максимум Sharpe учитывает доходность, минимум дисперсии только риск.</p>${weights}${svgChart(m ? m.points.map((p) => ({ label: pct(p.weight, 0) + ' SBER', a: p.risk * 100, b: p.mean * 100 })) : [], 'Портфели по весу SBER: зелёный σ год, синий μ год, %')}${
+  )}<h2>3. Доходность и риск</h2><p>Ценовая и полная доходность сравниваются при одинаковом капитале на общей базе ${esc(model.period.from)} — ${esc(model.period.till)}. ${model.period.limited ? 'USD-дивиденд T за 2021 не переведен по неподтвержденному курсу; весь 2021 не включается ни в один из двух сравниваемых режимов. Пятилетний ценовой результат показан отдельно.' : ''}</p>${table(
+    ['Актив', 'Ценовой CAGR', 'Полный CAGR', 'Пятилетний ценовой CAGR', 'Пятилетний полный CAGR'],
+    (['SBER', 'T'] as Company[]).map((c) => [
+      c,
+      pct(model.comparison[c].price?.cagr, 2),
+      pct(model.comparison[c].total?.cagr, 2),
+      pct(model.fiveYear[c].price?.cagr, 2),
+      pct(model.fiveYear[c].total?.cagr, 2),
+    ]),
+  )}${table(['Актив', 'n', 'μ месяц', 'μ год', 'CAGR', 'σ год', 'Sharpe', 'MaxDD', 'VaR95'], stats)}${svgChart(wealth, 'Накопленная стоимость, начальная = 100')}<p>R = (Pₜ − Pₜ₋₁ + Dₜ) / Pₜ₋₁; полная стоимость в модели учитывает отдельные ежедневные дивидендные события и дробное реинвестирование. Средняя годовая = 12 × μ месяца; CAGR = (Vкон / Vнач)^(365,25 / дни) − 1. σ месяца = √[Σ(R − μ)² / (n − 1)], σ года = σ месяца × √12. Cov = Σ[(Rs − μs)(Rt − μt)] / (n − 1). VaR95 — отрицательный 5%-квантиль месячных доходностей, линейная интерполяция, n ≥ 24; не максимальный возможный убыток. MaxDD по дневным закрытиям.</p><h2>4. Модель Марковица и максимум Sharpe</h2><p>E(Rp) = wE(Rs) + (1 − w)E(Rt). σp² = w²σs² + (1 − w)²σt² + 2w(1 − w)Cov(s,t). Перебираются 101 вес с шагом 1%, без плеча. Эффективная граница выделяется по недоминируемости. Эффективные риск и доходность относятся к выбранному портфелю.</p><p>Sharpe = (μ месяца − Rf месяца) / σ месяца × √12; Rf месяца = (1 + Rf года)^(1/12) − 1. Максимум Sharpe учитывает доходность, минимум дисперсии только риск.</p>${weights}<p>Исторический CAGR выбранного портфеля: ${pct(model.historical.selected.cagr, 2)}; арифметическая оценка: ${pct(model.selected?.mean, 2)}. Эти показатели не взаимозаменяемы. CAGR считается по дневной стоимости с ребалансировкой в доступные общие концы месяцев; позиции удерживаются через торговые паузы. Пятилетний CAGR при выбранных весах: ${pct(model.fiveYearPortfolio?.cagr, 2)}, пятилетняя арифметическая оценка ${pct(model.fiveYearPortfolio?.annualMean, 2)}.</p>${svgChart(m ? m.points.map((p) => ({ label: pct(p.weight, 0) + ' SBER', a: p.risk * 100, b: p.mean * 100 })) : [], 'Портфели по весу SBER: зелёный σ год, синий μ год, %')}${
     m
       ? '<h3>Ковариационная матрица</h3>' +
         table(
@@ -462,7 +580,23 @@ export function reportHTML(ctx: ExportContext) {
           ],
         )
       : ''
-  }<h2>5. Сценарии 2026</h2><p>Ретроспективная учебная модель на EPS 2025, раскрытой в 2026. EPS Сбера ${rub(model.eps.SBER, 2)}, Т ${rub(model.eps.T, 3)} после сплита. Цена = EPS2025 × (1 + g) × P/E. Дивиденд = EPS2026 × доля выплат. Сценариям не приписаны вероятности. Горизонт данной таблицы — один год; в калькуляторе V(t) = V₀(1 + R)^t при постоянной сценарной ставке на весь горизонт.</p>${table(
+  }<h2>Ретроспективный исторический P/E</h2>${table(
+    ['Актив / год', 'Дата цены', 'Цена', 'Базовая EPS', 'P/E'],
+    model.valuations.map((v) => [
+      `${v.company} / ${v.year}`,
+      v.priceDate,
+      fmt(v.price, 2),
+      fmt(v.eps, 3),
+      v.pe === null ? v.status : fmt(v.pe, 2),
+    ]),
+  )}<p>P/E = Price / EPS. Годовая EPS опубликована позже даты цены: все значения ретроспективны, цена и EPS на одинаковой базе акций. При неположительной или неизвестной EPS положительный P/E не показывается. Сценарный P/E ниже — допущение, не историческое значение. При фиксированной EPS цена пропорциональна P/E.</p>${svgChart(
+    years.map((y) => ({
+      label: String(y),
+      a: model.valuations.find((v) => v.company === 'SBER' && v.year === y)?.pe ?? null,
+      b: model.valuations.find((v) => v.company === 'T' && v.year === y)?.pe ?? null,
+    })),
+    'Исторический P/E, ×',
+  )}<h2>5. Сценарии 2026</h2><p>Ретроспективная учебная модель на EPS 2025, раскрытой в 2026. EPS Сбера ${rub(model.eps.SBER, 2)}, Т ${rub(model.eps.T, 3)} после сплита. Цена = EPS2025 × (1 + g) × P/E. Дивиденд = EPS2026 × доля выплат. Сценариям не приписаны вероятности. Горизонт данной таблицы — один год; в калькуляторе V(t) = V₀(1 + R)^t при постоянной сценарной ставке на весь горизонт.</p>${table(
     ['Сценарий', 'Компания', 'g EPS', 'P/E', 'Выплаты', 'Цена', 'Дивиденд', 'Доходность'],
     ctx.scenarios.flatMap((s) =>
       (['SBER', 'T'] as Company[]).map((c) => {
@@ -482,7 +616,16 @@ export function reportHTML(ctx: ExportContext) {
   )}${table(
     ['Сценарий', 'Стоимость портфеля', 'Результат, ₽'],
     model.results.map((r) => [r.name, rub(r.value), rub(r.profit)]),
-  )}<ul>${ctx.scenarios.map((s) => `<li><b>${esc(s.name)}:</b> ${esc(s.premise)} Нарушение: ${esc(s.risk)}</li>`).join('')}</ul><h2>6. Инвестиционный вывод</h2><ol>${model.conclusions.map((s) => `<li>${esc(s)}</li>`).join('')}</ol><p>Положение эмитента оценивается по шести сигналам: положительная прибыль, рост капитала, ROE ≥ 15%, общий капитал ≥ 12%, NPL ≤ 6%, отсутствие снижения прибыли. Недостаточно данных — отсутствует ключевое поле; неблагоприятная динамика — прибыль/капитал ≤ 0 либо ≥3 отрицательных сигнала; повышенные риски — 1–2; устойчивое — 0. Риск акции высокий при σ ≥35% или просадке ≥40%, умеренный при σ ≥20% или просадке ≥20%, иначе низкий. Это учебные пороги.</p><h2>7. Ограничения</h2><ul>${data.market.notes.map((s) => `<li>${esc(s)}</li>`).join('')}<li>Две группы одного сектора не обеспечивают широкую диверсификацию; история и корреляция нестабильны. Нет гарантии доходности и достоверного прогноза банкротства по пяти годовым наблюдениям.</li><li>Налоги, комиссии, инфляция, валютные издержки и целочисленные лоты не учтены. Фактическая стратегия счета отличается от условной реинвестиции.</li><li>Падение цены и временный убыток не означают дефолт. NPL и ROE разных групп методологически различаются.</li></ul><h2>8. Источники</h2><ol class="notes">${sources.map((s) => `<li><b>${esc(s.title)}</b>. ${esc(s.standard)}; ${esc(s.section)}. Проверено ${esc(s.accessed)}. <a href="${esc(s.url)}">${esc(s.url)}</a>. ${esc(s.note)}</li>`).join('')}</ol><h2>Приложение. Примечания к финансовым значениям</h2>${table(
+  )}<ul>${ctx.scenarios.map((s) => `<li><b>${esc(s.name)}:</b> ${esc(s.premise)} Нарушение: ${esc(s.risk)}</li>`).join('')}</ul><h2>6. Инвестиционный вывод</h2><ol>${model.conclusions.map((s) => `<li>${esc(s)}</li>`).join('')}</ol><p>Положение эмитента оценивается по шести сигналам: положительная прибыль, рост капитала, ROE ≥ 15%, общий капитал ≥ 12%, NPL ≤ 6%, отсутствие снижения прибыли. Недостаточно данных — отсутствует ключевое поле; неблагоприятная динамика — прибыль/капитал ≤ 0 либо ≥3 отрицательных сигнала; повышенные риски — 1–2; устойчивое — 0. Риск акции высокий при σ ≥35% или просадке ≥40%, умеренный при σ ≥20% или просадке ≥20%, иначе низкий. Это учебные пороги.</p><h2>7. Ограничения</h2><ul>${data.market.notes.map((s) => `<li>${esc(s)}</li>`).join('')}<li>Две группы одного сектора не обеспечивают широкую диверсификацию; история и корреляция нестабильны. Нет гарантии доходности и достоверного прогноза банкротства по пяти годовым наблюдениям.</li><li>Налоги, комиссии, инфляция, валютные издержки и целочисленные лоты не учтены. Фактическая стратегия счета отличается от условной реинвестиции.</li><li>Падение цены и временный убыток не означают дефолт. NPL и ROE разных групп методологически различаются.</li></ul><h2>Пояснения показателей</h2><ul>${Object.values(
+    metricHelp,
+  )
+    .map(
+      (m) =>
+        `<li><b>${esc(m.name)}:</b> ${esc(m.formula)}. ${esc(m.meaning)} ${esc(m.interpretation)}</li>`,
+    )
+    .join(
+      '',
+    )}</ul><h2>8. Источники</h2><ol class="notes">${sources.map((s) => `<li><b>${esc(s.title)}</b>. ${esc(s.standard)}; ${esc(s.section)}. Проверено ${esc(s.accessed)}. <a href="${esc(s.url)}">${esc(s.url)}</a>. ${esc(s.note)}</li>`).join('')}</ol><h2>Приложение. Примечания к финансовым значениям</h2>${table(
     ['Компания', 'Год', 'Показатель', 'Источник', 'Примечание'],
     data.financial.facts
       .filter((f) => f.note)
