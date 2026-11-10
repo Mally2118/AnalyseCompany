@@ -1,3 +1,4 @@
+import type { CalculatorMode } from '../calculations/calculator';
 import type { DividendMode, ProjectionPlans } from '../calculations/projection';
 import { useMemo } from 'react';
 import type { ReturnKind, Scenario } from '../data/types';
@@ -14,6 +15,7 @@ export function useModel(
   horizon = 1,
   dividendMode: DividendMode = 'reinvest',
   plans?: ProjectionPlans,
+  calculatorMode: CalculatorMode = 'history',
 ) {
   return useMemo(
     () =>
@@ -28,8 +30,21 @@ export function useModel(
         horizon,
         dividendMode,
         plans,
+        calculatorMode,
       ),
-    [data, kind, start, rf, weight, amount, scenarios, horizon, dividendMode, plans],
+    [
+      data,
+      kind,
+      start,
+      rf,
+      weight,
+      amount,
+      scenarios,
+      horizon,
+      dividendMode,
+      plans,
+      calculatorMode,
+    ],
   );
 }
 export type AnalysisModel = ReturnType<typeof createResearchModel>;

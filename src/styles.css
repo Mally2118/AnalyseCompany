@@ -1,29 +1,42 @@
 @import 'tailwindcss';
+
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('./assets/fonts/SourceSerif4-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('./assets/fonts/SourceSerif4-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Arial,
-    sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   color-scheme: dark;
   --bg: #0d121b;
   --sidebar: #101620;
   --card: #141c28;
   --card-hover: #1a2432;
-  --text: #e9eef6;
-  --muted: #8995a9;
-  --subtle: #5b6a80;
+  --text: #edf1f7;
+  --muted: #b4bfce;
+  --subtle: #a5b2c4;
   --border: #252f3e;
   --mint: #40cbb0;
   --blue: #78a0ff;
   --input: #101722;
   --shadow: 0 8px 30px #0002;
   font-synthesis: none;
+  font-variant-numeric: tabular-nums;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  font-size: 14px;
+  font-size: 17px;
+  line-height: 1.6;
 }
 :root[data-theme='light'] {
   color-scheme: light;
@@ -32,11 +45,11 @@
   --card: #fff;
   --card-hover: #edf3fa;
   --text: #1b2b43;
-  --muted: #64748b;
-  --subtle: #8190a3;
+  --muted: #4b5b70;
+  --subtle: #536176;
   --border: #dce3ec;
-  --mint: #108a76;
-  --blue: #426bdc;
+  --mint: #08735f;
+  --blue: #315bbb;
   --input: #f5f7fb;
   --shadow: 0 7px 30px #17395d07;
 }
@@ -88,18 +101,18 @@ p {
   margin: 0;
 }
 h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 650;
   letter-spacing: -1.1px;
   line-height: 1.25;
 }
 h2 {
-  font-size: 15px;
+  font-size: 18px;
   letter-spacing: -0.2px;
   font-weight: 600;
 }
 h3 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 10px;
 }
@@ -150,7 +163,7 @@ p {
 }
 .brand small {
   display: block;
-  font-size: 7px;
+  font-size: 14px;
   letter-spacing: 1.25px;
   color: var(--subtle);
   margin-top: 4px;
@@ -176,18 +189,18 @@ p {
   border-radius: 7px;
 }
 .workspace-label strong {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 550;
   display: block;
 }
 .workspace-label small {
-  font-size: 10px;
+  font-size: 14px;
   display: block;
   color: var(--muted);
   margin-top: 4px;
 }
 .nav-label {
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 1.25px;
   font-weight: 600;
   color: var(--subtle);
@@ -203,7 +216,7 @@ nav > a {
   align-items: center;
   gap: 12px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   padding: 12px 13px;
   border-radius: 7px;
   position: relative;
@@ -227,7 +240,7 @@ nav > a.active:before {
   background: var(--mint);
 }
 .nav-pill {
-  font-size: 9px;
+  font-size: 14px;
   padding: 2px 5px;
   background: #78a0ff12;
   color: var(--blue);
@@ -250,17 +263,17 @@ nav > a.active:before {
   margin-bottom: 11px;
 }
 .project-note strong {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 550;
 }
 .project-note p {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   margin: 7px 0 11px;
   line-height: 1.7;
 }
 .project-note a {
-  font-size: 10px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -274,7 +287,7 @@ nav > a.active:before {
   border: 0;
   margin: 15px 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   padding: 10px;
 }
 .theme-button span {
@@ -288,7 +301,7 @@ nav > a.active:before {
   border-top: 1px solid var(--border);
   padding: 16px 8px 0;
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 14px;
 }
 .live-dot {
   display: inline-block;
@@ -315,7 +328,7 @@ nav > a.active:before {
   display: flex;
   align-items: center;
   gap: 14px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 .breadcrumb > svg {
@@ -323,7 +336,7 @@ nav > a.active:before {
   margin-right: 8px;
 }
 .breadcrumb strong {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text);
   font-weight: 450;
 }
@@ -340,7 +353,7 @@ nav > a.active:before {
   align-items: center;
   gap: 7px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
 }
 .button {
   border: 1px solid var(--border);
@@ -350,7 +363,7 @@ nav > a.active:before {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  font-size: 11px;
+  font-size: 14px;
   background: var(--card);
   color: var(--text);
   font-weight: 500;
@@ -395,7 +408,7 @@ nav > a.active:before {
   border: 0;
   padding: 4px 0;
   color: var(--mint);
-  font-size: 11px;
+  font-size: 14px;
 }
 .export-wrap {
   position: relative;
@@ -422,7 +435,7 @@ nav > a.active:before {
   border: 0;
   border-radius: 6px;
   padding: 12px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .export-menu button:hover {
   background: var(--card-hover);
@@ -433,7 +446,7 @@ nav > a.active:before {
 .export-menu small {
   display: block;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
   margin-top: 4px;
 }
 .dropdown-dismiss {
@@ -469,7 +482,7 @@ main {
   background: none;
   border: 0;
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   display: inline-flex;
   align-items: center;
@@ -490,7 +503,7 @@ main {
 }
 .segmented.small button {
   padding: 6px 10px;
-  font-size: 10px;
+  font-size: 14px;
 }
 .dot {
   display: inline-block;
@@ -515,7 +528,7 @@ main {
   align-items: center;
   gap: 9px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
 }
 select {
   border: 1px solid var(--border);
@@ -523,7 +536,7 @@ select {
   color: var(--text);
   padding: 9px 10px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 14px;
   max-width: 100%;
   min-height: 35px;
 }
@@ -532,7 +545,7 @@ select {
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 14px;
 }
 .return-controls {
   display: flex;
@@ -543,7 +556,7 @@ select {
   margin-bottom: 30px;
 }
 .return-controls > span {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--subtle);
 }
 .return-controls > .snapshot-label {
@@ -557,7 +570,7 @@ select {
   margin-bottom: 27px;
 }
 .eyebrow {
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 1.7px;
   color: var(--mint);
   font-weight: 550;
@@ -565,7 +578,7 @@ select {
   margin-bottom: 12px;
 }
 .section-intro p {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 12px;
   max-width: 650px;
@@ -575,7 +588,7 @@ select {
   flex-shrink: 0;
   border-left: 1px solid var(--border);
   padding: 3px 0 3px 25px;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .research-badge .live-dot {
@@ -605,13 +618,13 @@ select {
   margin-bottom: 16px;
 }
 .card-head p {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 7px;
   line-height: 1.5;
 }
 .card > p:not(.footnote) {
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 12px;
 }
 .kpi-grid {
@@ -630,7 +643,7 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .kpi-icon {
@@ -667,14 +680,14 @@ select {
   line-height: 1.2;
 }
 .kpi-bottom {
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.7;
 }
 .kpi > small {
   display: block;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 14px;
   margin-top: 7px;
 }
 .dashboard-main {
@@ -694,13 +707,13 @@ select {
   gap: 18px;
 }
 .grid-two.plain p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
 }
 .tag {
   display: inline-flex;
   align-items: center;
-  font-size: 9px;
+  font-size: 14px;
   padding: 5px 8px;
   border: 1px solid currentColor;
   border-radius: 5px;
@@ -720,7 +733,7 @@ select {
   margin-top: 8px;
 }
 .chart-foot > span {
-  font-size: 9px;
+  font-size: 14px;
   color: var(--subtle);
 }
 .chart-tooltip {
@@ -728,7 +741,7 @@ select {
   border: 1px solid var(--border);
   padding: 12px;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .company-list {
   margin-top: 22px;
@@ -767,11 +780,11 @@ select {
   justify-content: center;
 }
 .company-name strong {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 550;
 }
 .company-name > span {
-  font-size: 8px;
+  font-size: 14px;
   color: var(--muted);
 }
 .company-price {
@@ -782,11 +795,11 @@ select {
   gap: 6px;
 }
 .company-price strong {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 550;
 }
 .company-price > span {
-  font-size: 9px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -799,7 +812,7 @@ select {
   justify-content: space-between;
 }
 .company-risk > span:first-child {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .mini-insight {
@@ -816,12 +829,12 @@ select {
   flex-shrink: 0;
 }
 .mini-insight strong {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 500;
 }
 .mini-insight p {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 14px;
   margin-top: 6px;
   line-height: 1.7;
 }
@@ -842,13 +855,13 @@ select {
   border: 0;
 }
 .insight-number {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 550;
   color: var(--mint);
   padding-top: 4px;
 }
 .insight-list p {
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.8;
   color: var(--muted);
 }
@@ -863,7 +876,7 @@ select {
   color: var(--mint);
 }
 .status-line > strong {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 550;
 }
 .status-line .tag {
@@ -887,7 +900,7 @@ select {
   background: #78a0ff07;
   padding: 14px 17px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.75;
   margin-bottom: 21px;
 }
@@ -912,7 +925,7 @@ select {
   width: 100%;
   border-collapse: collapse;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 14px;
 }
 .table-scroll th,
 .table-scroll td {
@@ -927,7 +940,7 @@ select {
   padding-left: 4px;
 }
 .table-scroll thead th {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   background: var(--card);
 }
@@ -938,7 +951,7 @@ select {
 .table-scroll small {
   display: block;
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 14px;
   margin-top: 4px;
   white-space: normal;
 }
@@ -946,7 +959,7 @@ select {
   white-space: normal;
   min-width: 210px;
   max-width: 380px;
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.7;
   text-align: left;
 }
@@ -955,7 +968,7 @@ select {
   align-items: center;
   gap: 4px;
   white-space: normal;
-  font-size: 10px;
+  font-size: 14px;
 }
 .metric-label {
   display: flex;
@@ -967,7 +980,7 @@ select {
   border: 0;
   padding: 3px 0;
   color: inherit;
-  font-size: 11px;
+  font-size: 14px;
   cursor: pointer;
   border-bottom: 1px dotted var(--subtle);
 }
@@ -982,7 +995,7 @@ select {
   margin-right: 5px;
 }
 .footnote {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.8;
   margin-top: 15px;
@@ -1006,7 +1019,7 @@ select {
   border-radius: 7px;
   padding: 12px;
   z-index: 25;
-  font-size: 11px;
+  font-size: 14px;
   box-shadow: var(--shadow);
   line-height: 1.7;
 }
@@ -1026,7 +1039,7 @@ select {
   min-width: 0;
 }
 .field > span {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .input-wrap {
@@ -1044,12 +1057,12 @@ select {
   width: 100%;
   min-width: 0;
   padding: 10px 11px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .input-wrap > span {
   padding: 0 11px;
   color: var(--subtle);
-  font-size: 11px;
+  font-size: 14px;
 }
 .portfolio-layout {
   display: grid;
@@ -1066,7 +1079,7 @@ select {
   display: flex;
   justify-content: center;
   gap: 16px;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 9px;
   flex-wrap: wrap;
@@ -1088,7 +1101,7 @@ select {
   display: flex;
   justify-content: space-between;
   gap: 15px;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   margin-bottom: 17px;
 }
@@ -1100,7 +1113,7 @@ select {
 }
 .weight-labels strong {
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   margin-left: 3px;
 }
 .weight-control input[type='range'] {
@@ -1129,7 +1142,7 @@ select {
 .range-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: 14px;
   color: var(--subtle);
   margin-top: 10px;
 }
@@ -1143,7 +1156,7 @@ select {
   margin: 14px 0;
 }
 .portfolio-result span {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .portfolio-result strong {
@@ -1157,14 +1170,14 @@ select {
   margin: 23px 0;
 }
 .allocation strong {
-  font-size: 34px;
+  font-size: 28px;
   letter-spacing: -1px;
   font-weight: 550;
 }
 .allocation small {
   display: inline-block;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0;
   margin-left: 8px;
@@ -1183,7 +1196,7 @@ select {
 .triplet span {
   display: block;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
 }
 .triplet b {
   font-size: 18px;
@@ -1198,7 +1211,7 @@ select {
   padding: 10px 0 20px;
 }
 .formula-grid code {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -1225,7 +1238,7 @@ select {
 }
 .investment-split span {
   display: block;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   margin-bottom: 9px;
 }
@@ -1246,14 +1259,14 @@ select {
   margin: 21px 0;
 }
 .scenario-profit {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   display: flex;
   justify-content: space-between;
   gap: 10px;
 }
 .scenario-profit strong {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 550;
 }
 .scenario-title {
@@ -1270,7 +1283,7 @@ select {
   margin-left: auto;
 }
 .scenario-premise {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.8;
   margin: 17px 0;
@@ -1295,7 +1308,7 @@ select {
 }
 .mini-company {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
   margin-bottom: 17px;
   font-weight: 550;
 }
@@ -1315,12 +1328,12 @@ select {
   display: flex;
   justify-content: space-between;
   gap: 9px;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .scenario-security b {
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 .scenario-total {
@@ -1330,7 +1343,7 @@ select {
   gap: 10px;
   margin-top: 22px;
   padding-top: 19px;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 .scenario-total > strong {
@@ -1348,7 +1361,7 @@ select {
   gap: 11px;
 }
 .model-caption > span {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 .model-caption > strong {
@@ -1356,12 +1369,12 @@ select {
   font-weight: 550;
 }
 .model-caption > a {
-  font-size: 10px;
+  font-size: 14px;
 }
 .conclusion-list,
 .readable-list {
   padding-left: 18px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.85;
 }
@@ -1379,10 +1392,10 @@ select {
   align-items: center;
   border-bottom: 1px solid var(--border);
   padding: 13px 0;
-  font-size: 11px;
+  font-size: 14px;
 }
 .signal-list strong {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 450;
   margin-left: auto;
 }
@@ -1394,7 +1407,7 @@ select {
   border: 1px solid var(--border);
   padding: 14px;
   border-radius: 7px;
-  font-size: 11px;
+  font-size: 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -1403,7 +1416,7 @@ select {
 }
 .market-risk-panel p {
   width: 100%;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 5px;
 }
@@ -1422,13 +1435,13 @@ select {
   border: 0;
 }
 .timeline span {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--mint);
   min-width: 100px;
   padding-top: 4px;
 }
 .timeline p {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 .source-list > div {
@@ -1446,22 +1459,22 @@ select {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .source-list span {
   display: block;
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 14px;
   margin-top: 7px;
 }
 .source-list p {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 7px;
   max-width: 850px;
 }
 .source-list code {
-  font-size: 9px;
+  font-size: 14px;
   color: var(--subtle);
   padding-top: 5px;
   white-space: nowrap;
@@ -1479,7 +1492,7 @@ select {
   border-top: 1px solid var(--border);
   margin-top: 35px;
   padding: 23px 0 5px;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--subtle);
 }
 .main-footer > span {
@@ -1493,14 +1506,14 @@ select {
 }
 .main-footer p {
   max-width: 460px;
-  font-size: 9px;
+  font-size: 14px;
 }
 .main-footer a {
   display: flex;
   gap: 5px;
   align-items: center;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 14px;
 }
 .loading {
   min-height: 100vh;
@@ -1515,7 +1528,7 @@ select {
 .loading p {
   color: var(--muted);
   max-width: 650px;
-  font-size: 13px;
+  font-size: 14px;
 }
 .mobile-menu,
 .mobile-close {
@@ -1533,16 +1546,16 @@ select {
 }
 @media (min-width: 1600px) {
   h1 {
-    font-size: 37px;
+    font-size: 28px;
   }
   .card {
     padding: 25px;
   }
   .kpi-value {
-    font-size: 32px;
+    font-size: 28px;
   }
   .section-intro p {
-    font-size: 13px;
+    font-size: 14px;
   }
   .topbar {
     padding-left: 45px;
@@ -1552,19 +1565,19 @@ select {
     padding: 30px 45px;
   }
   .company-name strong {
-    font-size: 13px;
+    font-size: 14px;
   }
   .company-price strong {
-    font-size: 15px;
+    font-size: 18px;
   }
   .kpi-top {
-    font-size: 12px;
+    font-size: 14px;
   }
   .kpi-bottom {
-    font-size: 11px;
+    font-size: 14px;
   }
   .insight-list p {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 @media (max-width: 1200px) {
@@ -1578,7 +1591,7 @@ select {
     gap: 6px;
   }
   .brand small {
-    font-size: 6px;
+    font-size: 14px;
   }
   .main-shell {
     margin-left: 215px;
@@ -1605,7 +1618,7 @@ select {
     font-size: 23px;
   }
   .kpi-top {
-    font-size: 9px;
+    font-size: 14px;
   }
   .kpi-icon {
     width: 27px;
@@ -1618,7 +1631,7 @@ select {
     padding: 18px;
   }
   .section-intro h1 {
-    font-size: 29px;
+    font-size: 28px;
   }
   .research-badge {
     padding-left: 15px;
@@ -1630,10 +1643,10 @@ select {
     padding: 15px;
   }
   .allocation strong {
-    font-size: 29px;
+    font-size: 28px;
   }
   .allocation small {
-    font-size: 10px;
+    font-size: 14px;
   }
   .return-controls > .snapshot-label {
     display: none;
@@ -1702,15 +1715,15 @@ select {
     align-items: flex-start;
   }
   .period-controls label > span {
-    font-size: 8px;
+    font-size: 14px;
   }
   .period-controls select {
-    font-size: 10px;
+    font-size: 14px;
     padding: 6px;
   }
   .company-switch button {
     padding: 10px 8px;
-    font-size: 10px;
+    font-size: 14px;
   }
   .grid-two {
     gap: 14px;
@@ -1759,7 +1772,7 @@ select {
   }
   .topbar .export-button {
     padding: 9px;
-    font-size: 10px;
+    font-size: 14px;
     gap: 6px;
   }
   .breadcrumb > span:first-of-type,
@@ -1777,7 +1790,7 @@ select {
     display: none;
   }
   .company-switch button {
-    font-size: 9px;
+    font-size: 14px;
     gap: 4px;
     padding: 9px 7px;
   }
@@ -1796,7 +1809,7 @@ select {
     padding-bottom: 17px;
   }
   .return-controls > span {
-    font-size: 9px;
+    font-size: 14px;
   }
   .section-intro {
     align-items: flex-start;
@@ -1809,12 +1822,12 @@ select {
     letter-spacing: -0.9px;
   }
   .section-intro p {
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.7;
     margin-top: 11px;
   }
   .eyebrow {
-    font-size: 8px;
+    font-size: 14px;
     letter-spacing: 1.5px;
     margin-bottom: 10px;
   }
@@ -1830,22 +1843,22 @@ select {
     padding: 16px;
   }
   .kpi-top {
-    font-size: 9px;
+    font-size: 14px;
   }
   .kpi-bottom {
-    font-size: 8px;
+    font-size: 14px;
   }
   .kpi > small {
-    font-size: 8px;
+    font-size: 14px;
   }
   .card {
     padding: 17px;
   }
   .card-head h2 {
-    font-size: 14px;
+    font-size: 16px;
   }
   .card-head p {
-    font-size: 9px;
+    font-size: 14px;
   }
   .dashboard-main,
   .portfolio-layout,
@@ -1873,10 +1886,10 @@ select {
     font-size: 17px;
   }
   .company-name strong {
-    font-size: 10px;
+    font-size: 14px;
   }
   .company-name > span {
-    font-size: 7px;
+    font-size: 14px;
   }
   .company-price {
     grid-column: 1/-1;
@@ -1895,11 +1908,11 @@ select {
     gap: 8px;
   }
   .chart-foot > span {
-    font-size: 8px;
+    font-size: 14px;
   }
   .notice {
     padding: 12px;
-    font-size: 10px;
+    font-size: 14px;
   }
   .kpi-grid.three {
     grid-template-columns: 1fr;
@@ -1931,10 +1944,10 @@ select {
   }
   .chart-legend {
     gap: 9px;
-    font-size: 8px;
+    font-size: 14px;
   }
   .weight-labels {
-    font-size: 11px;
+    font-size: 14px;
   }
   .table-scroll th,
   .table-scroll td {
@@ -1947,40 +1960,40 @@ select {
     font-size: 23px;
   }
   .model-caption > span {
-    font-size: 9px;
+    font-size: 14px;
   }
   .grid-two.plain p {
-    font-size: 10px;
+    font-size: 14px;
   }
   .source-list code {
     display: none;
   }
   .source-list a {
-    font-size: 11px;
+    font-size: 14px;
   }
   .timeline {
-    font-size: 10px;
+    font-size: 14px;
   }
   .timeline > div {
     gap: 12px;
   }
   .timeline span {
     min-width: 75px;
-    font-size: 10px;
+    font-size: 14px;
   }
   .timeline p {
-    font-size: 10px;
+    font-size: 14px;
   }
   .source-list span {
-    font-size: 9px;
+    font-size: 14px;
   }
   .main-footer {
     flex-wrap: wrap;
-    font-size: 8px;
+    font-size: 14px;
     margin-top: 28px;
   }
   .main-footer a {
-    font-size: 8px;
+    font-size: 14px;
   }
   .hint-content {
     left: -190px;
@@ -1989,13 +2002,13 @@ select {
     margin-bottom: 0;
   }
   .signal-list strong {
-    font-size: 10px;
+    font-size: 14px;
   }
   .allocation {
     gap: 13px;
   }
   .main-footer > span {
-    font-size: 8px;
+    font-size: 14px;
   }
   .card + .card {
     margin-top: 16px;
@@ -2036,14 +2049,14 @@ select {
   }
 }
 .analysis-dates {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   margin: -4px 0 22px;
   line-height: 1.7;
 }
 .metric-guide {
   margin-top: 22px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 .metric-guide summary {
@@ -2052,12 +2065,12 @@ select {
   font-weight: 600;
 }
 .metric-guide code {
-  font-size: 11px;
+  font-size: 14px;
   display: block;
   overflow-wrap: anywhere;
 }
 .metric-guide p {
-  font-size: 11px;
+  font-size: 14px;
   margin-top: 8px;
   line-height: 1.7;
 }
@@ -2065,7 +2078,7 @@ select {
   margin: 18px 0;
 }
 .amount-control label {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   display: flex;
   justify-content: space-between;
@@ -2105,7 +2118,7 @@ select {
   padding: 16px 20px;
   list-style: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 550;
   color: var(--muted);
 }
@@ -2139,7 +2152,7 @@ select {
   border: 0;
 }
 .disclosure-body > p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
 }
 .disclosure-body > h3 {
@@ -2168,16 +2181,16 @@ select {
   gap: 18px;
 }
 .overview-status strong {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 550;
 }
 .overview-status p {
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 6px;
 }
 .overview-status small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
   display: block;
   margin-top: 5px;
 }
@@ -2194,7 +2207,7 @@ select {
 }
 .sources-summary,
 .forecast-capital {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   margin-bottom: 22px;
   line-height: 1.8;
@@ -2213,7 +2226,7 @@ select {
 }
 .scenario-card .disclosure > summary {
   padding: 14px 12px;
-  font-size: 11px;
+  font-size: 14px;
 }
 .scenario-card .disclosure-body {
   padding: 0 12px 14px;
@@ -2265,7 +2278,7 @@ select {
   border-radius: 50%;
   background: transparent;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
@@ -2287,7 +2300,7 @@ select {
   background: var(--card);
   color: var(--text);
   box-shadow: 0 10px 40px #0006;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
   text-align: left;
 }
@@ -2306,12 +2319,12 @@ select {
 }
 .metric-popover p {
   margin: 10px 0;
-  font-size: 14px;
+  font-size: 16px;
 }
 .metric-popover a {
   display: inline-block;
   margin-top: 8px;
-  font-size: 14px;
+  font-size: 16px;
 }
 .popover-variables {
   color: var(--muted);
@@ -2339,12 +2352,12 @@ select {
 }
 .guide-entry strong {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text);
 }
 .guide-entry span {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 5px;
   line-height: 1.7;
@@ -2360,7 +2373,7 @@ select {
 }
 .data-origin {
   display: block;
-  font-size: 10px;
+  font-size: 14px;
   margin-top: 5px;
   color: var(--muted);
 }
@@ -2385,19 +2398,19 @@ select {
   border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
 }
 @media (max-width: 760px) {
   .metric-help {
     width: 23px;
     height: 23px;
-    font-size: 13px;
+    font-size: 14px;
   }
   .metric-popover {
     padding: 15px;
   }
   .math-formula {
-    font-size: 13px;
+    font-size: 14px;
   }
   .filter-row {
     flex-wrap: wrap;
@@ -2421,4 +2434,305 @@ select {
   width: max-content;
   max-width: none;
   vertical-align: middle;
+}
+
+/* Reading typography: serif prose, neutral controls and tabular financial figures. */
+body {
+  line-height: 1.6;
+}
+h1 {
+  font-size: 28px;
+  line-height: 1.25;
+}
+h2,
+h3,
+.card-head h3 {
+  font-size: 19px;
+  line-height: 1.4;
+}
+button,
+input,
+select,
+nav,
+.topbar,
+.brand,
+.period-controls,
+.data-status,
+.kpi,
+table,
+.chart,
+.frontier-chart,
+.weight-control,
+.portfolio-result,
+.scenario-value,
+.scenario-total,
+.investment-split,
+.calculator-history,
+.historical-result,
+.scenario-profit,
+.field,
+.range-labels {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+p,
+.card > p:not(.footnote),
+.guide-entry span,
+.conclusion-list,
+.readable-list,
+.disclosure-body > p:not(.footnote) {
+  font-size: 17px;
+  line-height: 1.6;
+}
+.footnote,
+.analysis-dates,
+.section-intro p,
+.card-head p,
+.metric-guide p,
+.source-list p,
+.source-list span {
+  font-size: 15px;
+  line-height: 1.6;
+}
+.metric-popover {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.metric-popover p {
+  font-size: 15px;
+}
+.metric-popover strong {
+  font-size: 17px;
+}
+.card-head {
+  margin-bottom: 20px;
+}
+.kpi {
+  min-height: 160px;
+}
+.kpi-value {
+  font-size: 30px;
+  overflow-wrap: anywhere;
+}
+.kpi-top {
+  align-items: flex-start;
+}
+.kpi-bottom,
+.kpi > small {
+  font-size: 14px;
+}
+.kpi-icon,
+nav svg,
+.button svg {
+  flex-shrink: 0;
+}
+nav > a {
+  padding: 11px 9px;
+  gap: 9px;
+  line-height: 1.45;
+}
+.sidebar {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+.brand {
+  font-size: 18px;
+  letter-spacing: -0.6px;
+}
+.brand-light {
+  font-weight: 600;
+}
+.brand small {
+  letter-spacing: 0.1px;
+}
+.global-controls,
+.period-controls,
+.return-controls {
+  flex-wrap: wrap;
+}
+.period-controls {
+  gap: 12px;
+}
+.segmented button {
+  white-space: normal;
+  line-height: 1.45;
+}
+.main-footer {
+  flex-wrap: wrap;
+}
+.main-footer > span {
+  white-space: normal;
+}
+.amount-control label {
+  flex-wrap: wrap;
+}
+.field span,
+.field label {
+  line-height: 1.5;
+}
+.portfolio-result > div {
+  align-items: flex-start;
+}
+.chart {
+  font-size: 14px;
+}
+.recharts-legend-item-text,
+.recharts-tooltip-item {
+  color: var(--text) !important;
+}
+.recharts-cartesian-axis-tick-value {
+  fill: var(--muted);
+}
+.math-formula {
+  font-size: 16px;
+}
+.origin-estimated,
+.gold {
+  color: #e9c97f;
+}
+.positive {
+  color: var(--mint);
+}
+.negative,
+.red {
+  color: #ff9fa8;
+}
+:root[data-theme='light'] .gold,
+:root[data-theme='light'] .origin-estimated {
+  color: #806018;
+}
+:root[data-theme='light'] .purple {
+  color: #72539c;
+}
+:root[data-theme='light'] .negative,
+:root[data-theme='light'] .red {
+  color: #b12b3d;
+}
+:root[data-theme='light'] .tag {
+  color: var(--text);
+}
+.historical-result {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+}
+.historical-result > span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.calculator-value {
+  color: var(--text);
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.calculator-history {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.calculator-history > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.calculator-history span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.calculator-history strong {
+  font-size: 22px;
+}
+.scenario-value {
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+@media (max-width: 1200px) {
+  .portfolio-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  h1 {
+    font-size: 26px;
+  }
+  .global-controls > .segmented {
+    width: 100%;
+  }
+  .global-controls > .segmented button {
+    flex: 1;
+    padding: 9px 6px;
+  }
+  .period-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .return-controls {
+    gap: 10px;
+  }
+  .return-controls .segmented {
+    max-width: 100%;
+  }
+  .return-controls .segmented button {
+    padding: 7px 9px;
+  }
+  .kpi-grid.three .kpi {
+    display: block;
+    min-height: 0;
+  }
+  .kpi-grid.three .kpi-value {
+    margin: 12px 0 8px;
+  }
+  .card {
+    padding: 18px;
+  }
+  .calculator-history {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .calculator-history > div {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+  }
+  .calculator-history strong {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .weight-labels {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .chart-legend {
+    flex-wrap: wrap;
+    line-height: 1.6;
+  }
+  .signal-list > div,
+  .signal-list strong {
+    flex-wrap: wrap;
+  }
+  .scenario-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+:root[data-theme='light'] .button.primary {
+  color: #fff;
+}
+
+@media (max-width: 1200px) {
+  .calculator-layout > .card:nth-child(2) {
+    order: -1;
+  }
+}
+
+/* 16px also prevents automatic form zoom on mobile browsers. */
+input,
+select,
+.input-wrap input,
+.year-assumption {
+  font-size: 16px;
 }

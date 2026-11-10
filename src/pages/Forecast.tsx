@@ -1,3 +1,4 @@
+import { scenarioMethodology } from '../calculations/scenarios';
 import { MetricHelp } from '../components/MetricHelp';
 import { MathFormula } from '../components/MathFormula';
 import { RefreshCw } from 'lucide-react';
@@ -138,6 +139,7 @@ export function Forecast({
       </Card>
       <Disclosure title="Подробнее">
         <h3>Методика прогноза</h3>
+        <p>{scenarioMethodology}</p>
         <MathFormula latex="P_t=EPS_t(P/E)_t" />
         <p>
           Цена = EPS2025 × (1 + g) × P/E; дивиденд = EPS2026 × доля выплат. Доходность = (цена −

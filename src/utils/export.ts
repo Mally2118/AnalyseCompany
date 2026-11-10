@@ -1,3 +1,5 @@
+import { historicalExplanation } from '../calculations/calculator';
+import { scenarioMethodology } from '../calculations/scenarios';
 import katex from 'katex';
 import { calculatedROA, statusLabels } from '../calculations/data-records';
 import type { DataSet } from '../services/data';
@@ -118,6 +120,28 @@ export function financialCSVRows(ctx: ExportContext) {
         JSON.stringify({ SBER: q.SBER, T: q.T }),
         'Не факт и не гарантия; переоценка первого года не повторяется',
       ]);
+  for (const q of ctx.model.historyCalculation?.path ?? [])
+    rows.push([
+      'Портфель',
+      q.year,
+      'Стоимость при сохранении исторического CAGR',
+      q.value,
+      '₽',
+      'public/data/market.json',
+      `${ctx.model.period.from} — ${ctx.model.period.till}`,
+      'Математическая иллюстрация',
+      `Выбранный режим: ${ctx.model.calculatorMode}`,
+      'Расчётное',
+      'V₀ × (1 + CAGR)^n',
+      JSON.stringify({
+        amount: ctx.amount,
+        cagr: ctx.model.historyCalculation!.cagr,
+        years: q.year,
+        kind: ctx.kind,
+        weight: ctx.weight,
+      }),
+      historicalExplanation,
+    ]);
   return rows;
 }
 export function exportCSV(ctx: ExportContext) {
@@ -620,6 +644,37 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
     ],
     { origin: -1 },
   );
+  const history = model.historyCalculation;
+  sheet('Исторический расчёт', [
+    [
+      'Лет от начала',
+      'Капитал, ₽',
+      'Исторический CAGR, доля',
+      'Стоимость, ₽',
+      'Прибыль / убыток, ₽',
+      'Тип результата',
+    ],
+    ...(history?.path ?? []).map((q, i) => {
+      const row = i + 2;
+      return [
+        q.year,
+        formula("'Методика'!B8", ctx.amount),
+        formula("'Методика'!B21", history!.cagr),
+        formula(`B${row}*(1+C${row})^A${row}`, q.value),
+        formula(`D${row}-B${row}`, q.value - ctx.amount),
+        'Математическая иллюстрация, не прогноз',
+      ];
+    }),
+  ]);
+  XLSX.utils.sheet_add_aoa(
+    meta,
+    [
+      ['Режим калькулятора', model.calculatorMode],
+      ['Исторический расчёт', historicalExplanation],
+      ['Предпосылки сценариев', scenarioMethodology],
+    ],
+    { origin: -1 },
+  );
   wb.Workbook = { CalcPr: { calcMode: 'auto', fullCalcOnLoad: true } } as typeof wb.Workbook;
   return wb;
 }
@@ -798,7 +853,14 @@ export function reportHTML(ctx: ExportContext) {
   )}${table(
     ['Сценарий', 'Стоимость портфеля', 'Результат, ₽'],
     model.results.map((r) => [r.name, rub(r.value), rub(r.profit)]),
-  )}<ul>${ctx.scenarios.map((s) => `<li><b>${esc(s.name)}:</b> ${esc(s.premise)} Нарушение: ${esc(s.risk)}</li>`).join('')}</ul><h2>Годовой прогноз инвестиции</h2><p>Учебные предпосылки, не статистическая оценка: рост EPS приближается к пятому году к Сбер 0/5/8%, T 5/10/15%; P/E после 2026 по умолчанию постоянен, payout сохраняется. Ручные годовые параметры переопределяют эти допущения. Дивиденды: ${esc(model.dividendMode)}. Позиции не ребалансируются; сплит взаимно изменяет акции и EPS. Допэмиссия и налоги не моделируются.</p>${table(
+  )}<ul>${ctx.scenarios.map((s) => `<li><b>${esc(s.name)}:</b> ${esc(s.premise)} Нарушение: ${esc(s.risk)}</li>`).join('')}</ul><h2>Калькулятор: история и сценарии</h2><p>Выбранный режим: ${model.calculatorMode === 'history' ? 'Расчёт при сохранении исторической доходности' : 'Сценарный прогноз'}.</p><p>${esc(historicalExplanation)}. Vₙ = V₀ × (1 + CAGR)ⁿ; CAGR в десятичной форме. База ${esc(model.period.from)} — ${esc(model.period.till)}, ${ctx.kind === 'price' ? 'ценовая' : 'полная'} доходность портфеля; исторический CAGR ${pct(model.historyCalculation?.cagr)}.</p>${table(
+    ['Лет от начала', 'Стоимость, ₽', 'Прибыль / убыток, ₽'],
+    (model.historyCalculation?.path ?? []).map((q) => [
+      q.year,
+      rub(q.value),
+      rub(q.value - ctx.amount),
+    ]),
+  )}<p>Историческая иллюстрация, сценарный прогноз и арифметическая доходность Марковица — разные показатели.</p><h2>Годовой прогноз инвестиции</h2><p>${esc(scenarioMethodology)}</p><p>Учебные предпосылки, не статистическая оценка: рост EPS приближается к пятому году к Сбер 0/5/8%, T 5/5/15%; P/E после 2026 по умолчанию постоянен, payout сохраняется. Ручные годовые параметры переопределяют эти допущения. Дивиденды: ${esc(model.dividendMode)}. Позиции не ребалансируются; сплит взаимно изменяет акции и EPS. Допэмиссия и налоги не моделируются.</p>${table(
     ['Сценарий', 'Год', 'Стоимость', 'Прибыль', 'Прогнозный CAGR'],
     model.projections.flatMap((r) =>
       r.path

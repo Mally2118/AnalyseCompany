@@ -19,13 +19,13 @@ import {
 } from 'recharts';
 import type { Mode, Portfolio } from '../data/types';
 import { fmt, shortDate } from '../utils/format';
-const grid = '#293240';
+const grid = 'var(--border)';
 const tooltipStyle = {
   background: 'var(--card)',
   border: '1px solid var(--border)',
   borderRadius: 10,
   color: 'var(--text)',
-  fontSize: 12,
+  fontSize: 14,
 };
 export interface Series {
   key: string;
@@ -47,20 +47,20 @@ export function TimeChart({
   height?: number;
   xKey?: string;
 }) {
-  const common = { data, margin: { top: 15, right: 15, left: 0, bottom: 5 } },
-    axis = { stroke: 'var(--muted)', fontSize: 11, tickLine: false, axisLine: false };
+  const common = { data, margin: { top: 15, right: 30, left: 0, bottom: 5 } },
+    axis = { stroke: 'var(--muted)', fontSize: 14, tickLine: false, axisLine: false };
   const elements = (
     <>
       <CartesianGrid stroke={grid} strokeDasharray="3 5" vertical={false} />
       <XAxis
         dataKey={xKey}
         {...axis}
-        minTickGap={45}
+        minTickGap={60}
         tickFormatter={(v) => (xKey === 'date' ? shortDate(String(v)) : String(v))}
       />
       <YAxis
         {...axis}
-        width={54}
+        width={82}
         tickFormatter={(v) => `${fmt(Number(v), 0)}${percent ? '%' : ''}`}
       />
       <Tooltip
@@ -68,7 +68,7 @@ export function TimeChart({
         labelFormatter={(v) => (xKey === 'date' ? String(v) : `Год ${v}`)}
         formatter={(v, name) => [`${fmt(Number(v), 2)}${percent ? '%' : ''}`, String(name)]}
       />
-      <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 12, paddingTop: 14 }} />
+      <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 14, paddingTop: 14 }} />
       {percent && <ReferenceLine y={0} stroke={grid} />}
     </>
   );
@@ -209,13 +209,13 @@ export function FrontierChart({
             dataKey="x"
             name="Годовой риск"
             domain={['auto', 'auto']}
-            tick={{ fill: 'var(--muted)', fontSize: 11 }}
+            tick={{ fill: 'var(--muted)', fontSize: 14 }}
             tickFormatter={(v) => `${fmt(Number(v), 0)}%`}
             label={{
               value: 'Годовая волатильность, %',
               position: 'bottom',
               fill: 'var(--muted)',
-              fontSize: 12,
+              fontSize: 14,
             }}
           />
           <YAxis
@@ -223,7 +223,7 @@ export function FrontierChart({
             dataKey="y"
             name="Годовая доходность"
             domain={['auto', 'auto']}
-            tick={{ fill: 'var(--muted)', fontSize: 11 }}
+            tick={{ fill: 'var(--muted)', fontSize: 14 }}
             tickFormatter={(v) => `${fmt(Number(v), 0)}%`}
           />
           <Tooltip
@@ -360,12 +360,12 @@ export function RiskScatter({
             dataKey="x"
             name="Риск"
             unit="%"
-            tick={{ fill: 'var(--muted)', fontSize: 11 }}
+            tick={{ fill: 'var(--muted)', fontSize: 14 }}
             label={{
               value: 'Годовая волатильность, %',
               position: 'bottom',
               fill: 'var(--muted)',
-              fontSize: 11,
+              fontSize: 14,
             }}
           />
           <YAxis
@@ -373,7 +373,7 @@ export function RiskScatter({
             dataKey="y"
             name="Доходность"
             unit="%"
-            tick={{ fill: 'var(--muted)', fontSize: 11 }}
+            tick={{ fill: 'var(--muted)', fontSize: 14 }}
           />
           <Tooltip contentStyle={tooltipStyle} />
           {data.map((p) => (

@@ -2,14 +2,22 @@ import { ArrowRight, Sparkles, ShieldCheck, SlidersHorizontal } from 'lucide-rea
 import { Card, Disclosure, Notice, NumberField, SectionIntro } from '../components/ui';
 import { FrontierChart, TimeChart } from '../charts/Charts';
 import type { AnalysisModel } from '../services/model';
-import { investmentLimits } from '../calculations/calculator';
+import {
+  investmentLimits,
+  historicalExplanation,
+  type CalculatorMode,
+} from '../calculations/calculator';
+import { scenarioMethodology } from '../calculations/scenarios';
 import { fmt, pct, rub, date } from '../utils/format';
 import { ProjectionSettings } from '../components/ProjectionSettings';
 import { MetricHelp } from '../components/MetricHelp';
 import { MathFormula } from '../components/MathFormula';
-import type { Scenario } from '../data/types';
+import type { Scenario, ReturnKind } from '../data/types';
 import type { DividendMode, ProjectionPlans } from '../calculations/projection';
 export interface PortfolioControls {
+  calculatorMode: CalculatorMode;
+  setCalculatorMode: (mode: CalculatorMode) => void;
+  kind: ReturnKind;
   dividendMode: DividendMode;
   setDividendMode: (v: DividendMode) => void;
   plans: ProjectionPlans;
@@ -362,37 +370,91 @@ export function PortfolioPage(p: PortfolioControls) {
   );
 }
 export function Calculator(p: PortfolioControls) {
+  const historical = p.calculatorMode === 'history';
+  const illustration = p.model.historyCalculation;
   const path =
     p.model.projections[0]?.path.map((q, i) => ({
       year: q.year,
       ...Object.fromEntries(p.model.projections.map((r) => [r.id, r.path[i].value])),
     })) ?? [];
+  const different = p.model.projections.some(
+    (r) =>
+      r.cagr !== null &&
+      p.model.historical.selected.cagr !== null &&
+      Math.abs(r.cagr - p.model.historical.selected.cagr) > 0.1,
+  );
   return (
     <>
       <SectionIntro
         title="Калькулятор"
-        description="Настройте сумму, распределение и горизонт. Сравните сценарные результаты в рублях."
+        description="Исторический темп роста и сценарный прогноз — два разных расчёта."
       />
-      <div className="portfolio-layout">
+      <div className="portfolio-layout calculator-layout">
         <Card
-          title="Сценарная стоимость портфеля"
-          subtitle={p.horizon === 1 ? 'Один год · EPS × P/E' : 'Годовые EPS, P/E и дивиденды'}
+          title={
+            historical
+              ? 'Расчёт при сохранении исторической доходности'
+              : 'Сценарная стоимость портфеля'
+          }
+          subtitle={
+            historical
+              ? `${p.horizon} лет · ${p.kind === 'price' ? 'ценовой CAGR' : 'полный CAGR, с реинвестированием'}`
+              : `${p.horizon} лет · годовые EPS, P/E и дивиденды`
+          }
         >
           <TimeChart
-            data={path}
-            series={p.model.results.map((r) => ({ key: r.id, name: r.name, color: r.color }))}
+            data={historical ? (illustration?.path ?? []) : path}
+            series={
+              historical
+                ? [{ key: 'value', name: 'Стоимость капитала', color: 'var(--blue)' }]
+                : p.model.results.map((r) => ({ key: r.id, name: r.name, color: r.color }))
+            }
             xKey="year"
             height={340}
           />
-          <p className="footnote">
-            Переоценка P/E не повторяется автоматически. Дивиденды:{' '}
-            {p.dividendMode === 'reinvest'
-              ? 'реинвестируются по цене конца года'
-              : 'накапливаются деньгами без процентов'}
-            .
-          </p>
+          {historical ? (
+            <>
+              <p className="footnote">По горизонтали — лет от начала расчёта.</p>
+              {illustration ? (
+                <div className="historical-result">
+                  <span>
+                    Конечная стоимость <MetricHelp metric="value" />
+                  </span>
+                  <strong className="calculator-value">{rub(illustration.value)}</strong>
+                  <span>
+                    Прибыль / убыток{' '}
+                    <b className={illustration.profit >= 0 ? 'positive' : 'negative'}>
+                      {rub(illustration.profit)}
+                    </b>
+                  </span>
+                </div>
+              ) : (
+                <Notice>Нет данных для исторического CAGR на выбранном периоде.</Notice>
+              )}
+              <p className="footnote">{historicalExplanation}.</p>
+            </>
+          ) : (
+            <p className="footnote">
+              P/E не повышается повторно каждый год. Дивиденды в сценарии{' '}
+              {p.dividendMode === 'reinvest'
+                ? 'реинвестируются по цене конца года'
+                : 'накапливаются деньгами без процентов'}
+              . Этот режим выплат задаётся отдельно от исторического переключателя доходности.
+            </p>
+          )}
         </Card>
         <Card title="Параметры инвестиций" action={<SlidersHorizontal size={17} />}>
+          <label className="field">
+            <span>Режим расчёта</span>
+            <select
+              aria-label="Режим расчёта"
+              value={p.calculatorMode}
+              onChange={(e) => p.setCalculatorMode(e.target.value as CalculatorMode)}
+            >
+              <option value="history">Историческая доходность</option>
+              <option value="scenario">Сценарный прогноз</option>
+            </select>
+          </label>
           <div className="amount-control">
             <label htmlFor="investment-amount-range">
               Сумма инвестиций — ползунок <strong>{rub(p.amount)}</strong>
@@ -422,31 +484,6 @@ export function Calculator(p: PortfolioControls) {
             step={1}
             suffix="₽"
           />
-          <label className="field">
-            <span>Режим прогноза</span>
-            <select
-              aria-label="Режим прогноза"
-              value={p.horizon === 1 ? 'one' : 'multi'}
-              onChange={(e) => p.setHorizon(e.target.value === 'one' ? 1 : Math.max(2, p.horizon))}
-            >
-              <option value="one">Один год — 2026</option>
-              <option value="multi">Многолетний — 2–10 лет</option>
-            </select>
-          </label>
-          <label className="field" htmlFor="forecast-dividend-mode">
-            <span>
-              Дивиденды в прогнозе <MetricHelp metric="total" />
-            </span>
-            <select
-              id="forecast-dividend-mode"
-              aria-label="Дивиденды в прогнозе"
-              value={p.dividendMode}
-              onChange={(e) => p.setDividendMode(e.target.value as DividendMode)}
-            >
-              <option value="reinvest">Реинвестировать</option>
-              <option value="cash">Накапливать деньгами</option>
-            </select>
-          </label>
           <NumberField
             label="Инвестиционный горизонт"
             value={p.horizon}
@@ -490,134 +527,136 @@ export function Calculator(p: PortfolioControls) {
           </div>
         </Card>
       </div>
-      <div className="scenario-grid">
-        {p.model.projections.map((r) => {
-          const v = r.value;
-          return (
+      {!historical && (
+        <div className="scenario-grid">
+          {p.model.projections.map((r) => (
             <Card
               key={r.id}
               title={r.name}
-              subtitle={`${p.horizon} лет · прогнозный CAGR ${pct(r.cagr)}`}
+              subtitle={
+                <>
+                  {p.horizon} лет · прогнозный CAGR {pct(r.cagr, 2)}{' '}
+                  <MetricHelp metric="forecast_cagr" />
+                </>
+              }
             >
-              <span className="scenario-value" style={{ color: r.color }}>
-                {rub(v)}
-              </span>
+              <span className="scenario-value">{rub(r.value)}</span>
               <div className="scenario-profit">
                 Прибыль / убыток <MetricHelp metric="value" />{' '}
-                <strong className={v - p.amount >= 0 ? 'positive' : 'negative'}>
-                  {rub(v - p.amount)}
-                </strong>
+                <strong className={r.profit >= 0 ? 'positive' : 'negative'}>{rub(r.profit)}</strong>
               </div>
             </Card>
-          );
-        })}
-      </div>
-      <Card title="Исторические показатели и прогноз">
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>История выбранного портфеля</th>
-                <th>Значение</th>
-                <th>Сценарий</th>
-                <th>
-                  CAGR <MetricHelp metric="forecast_cagr" />
-                </th>
-                <th>
-                  Стоимость <MetricHelp metric="value" />
-                </th>
-                <th>
-                  Прибыль / убыток <MetricHelp metric="value" />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {p.model.projections.map((r, i) => (
-                <tr key={r.id}>
-                  <th>
-                    {i === 0
-                      ? 'Исторический CAGR'
-                      : i === 1
-                        ? 'Годовая волатильность'
-                        : 'Максимальная просадка'}{' '}
-                    <MetricHelp metric={i === 0 ? 'cagr' : i === 1 ? 'volatility' : 'drawdown'} />
-                  </th>
-                  <td>
-                    {pct(
-                      i === 0
-                        ? p.model.portfolioStats?.cagr
-                        : i === 1
-                          ? p.model.portfolioStats?.annualVol
-                          : p.model.portfolioStats?.maxDrawdown,
-                    )}
-                  </td>
-                  <th className="forecast-origin">{r.name} · прогноз</th>
-                  <td>{pct(r.cagr)}</td>
-                  <td>{rub(r.value)}</td>
-                  <td>{rub(r.profit)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          ))}
         </div>
-        {p.model.projections.some(
-          (r) =>
-            r.cagr !== null &&
-            p.model.portfolioStats?.cagr != null &&
-            r.cagr - p.model.portfolioStats.cagr > 0.1,
-        ) && (
-          <p className="footnote" role="status">
-            Прогнозный CAGR как минимум одного сценария выше исторического более чем на 10 п.п. Это
-            учебный порог чувствительности, не оценка вероятности; результат не ограничивается
-            автоматически.
+      )}
+      <Card
+        title={historical ? 'Историческая база расчёта' : 'Исторические показатели и прогноз'}
+        subtitle={`${date(p.model.period.from)} — ${date(p.model.period.till)} · ${p.kind === 'price' ? 'без дивидендов' : 'с реинвестированием дивидендов'}`}
+      >
+        <div className="calculator-history">
+          <div>
+            <span>
+              Исторический CAGR <MetricHelp metric="cagr" />
+            </span>
+            <strong>{pct(p.model.historical.selected.cagr, 2)}</strong>
+          </div>
+          <div>
+            <span>
+              Годовая волатильность <MetricHelp metric="volatility" />
+            </span>
+            <strong>{pct(p.model.portfolioStats?.annualVol)}</strong>
+          </div>
+          <div>
+            <span>
+              Максимальная просадка <MetricHelp metric="drawdown" />
+            </span>
+            <strong>{pct(p.model.portfolioStats?.maxDrawdown)}</strong>
+          </div>
+        </div>
+        {!historical && (
+          <p className="footnote" role={different ? 'status' : undefined}>
+            Сценарный CAGR приведён над каждым результатом.{' '}
+            {different ? 'Отличие от истории превышает 10 п.п. как минимум в одном сценарии. ' : ''}
+            Положительный прогноз обусловлен предполагаемым ростом EPS, изменением P/E и выплатами;
+            он не является продолжением исторической доходности.
           </p>
         )}
-        <p className="footnote">
-          История и прогноз относятся к разным периодам и стратегиям. Исторический портфель
-          ребалансируется в доступные концы месяцев, прогноз удерживает позиции и выбранный режим
-          дивидендов. Историческая доходность не гарантирует будущую.
-        </p>
       </Card>
-      <Disclosure title="Годовые предпосылки">
-        <ProjectionSettings
-          scenarios={p.scenarios}
-          plans={p.plans}
-          setPlans={p.setPlans}
-          horizon={p.horizon}
-        />
-      </Disclosure>
+      {!historical && (
+        <Disclosure title="Годовые предпосылки">
+          <label className="field" htmlFor="forecast-dividend-mode">
+            <span>
+              Дивиденды в прогнозе <MetricHelp metric="total" />
+            </span>
+            <select
+              id="forecast-dividend-mode"
+              aria-label="Дивиденды в прогнозе"
+              value={p.dividendMode}
+              onChange={(e) => p.setDividendMode(e.target.value as DividendMode)}
+            >
+              <option value="reinvest">Реинвестировать</option>
+              <option value="cash">Накапливать деньгами</option>
+            </select>
+          </label>
+          <p>{scenarioMethodology}</p>
+          <ProjectionSettings
+            scenarios={p.scenarios}
+            plans={p.plans}
+            setPlans={p.setPlans}
+            horizon={p.horizon}
+          />
+          <a className="inline-link" href="#forecast">
+            Настроить первый год: рост EPS, P/E и долю выплат <ArrowRight size={15} />
+          </a>
+        </Disclosure>
+      )}
       <Disclosure title="Подробнее">
         <p className="capital-conclusion">{p.model.conclusions.at(-1)}</p>
+        <p className="footnote">
+          Исторический CAGR рассчитан по стоимости всего портфеля с ребалансировкой в доступные
+          общие концы месяцев. Это не среднее CAGR отдельных акций. В сценарном режиме позиции
+          удерживаются без ребалансировки. Доходность Марковица остаётся арифметической оценкой.
+          Налоги, комиссии и инфляция не учтены.
+        </p>
+        <MathFormula latex={historical ? 'V_n=V_0(1+r)^n' : 'P_t=EPS_t(P/E)_t'} />
+        {historical && (
+          <p className="footnote">
+            r — исторический CAGR в долях единицы; n — срок расчёта в годах.
+          </p>
+        )}
         <h3>Годовая стоимость портфеля</h3>
         <div className="table-scroll">
           <table>
             <thead>
               <tr>
-                <th>Год</th>
-                {p.model.projections.map((r) => (
-                  <th key={r.id}>{r.name}</th>
-                ))}
+                <th>{historical ? 'Лет от начала' : 'Год'}</th>
+                {historical ? (
+                  <th>Стоимость</th>
+                ) : (
+                  p.model.projections.map((r) => <th key={r.id}>{r.name}</th>)
+                )}
               </tr>
             </thead>
             <tbody>
-              {path.map((q) => (
-                <tr key={q.year}>
-                  <th>{q.year}</th>
-                  {p.model.projections.map((r) => (
-                    <td key={r.id}>{rub(r.path.find((t) => t.year === q.year)?.value)}</td>
+              {historical
+                ? illustration?.path.map((q) => (
+                    <tr key={q.year}>
+                      <th>{q.year}</th>
+                      <td>{rub(q.value)}</td>
+                    </tr>
+                  ))
+                : path.map((q, i) => (
+                    <tr key={q.year}>
+                      <th>{q.year}</th>
+                      {p.model.projections.map((r) => (
+                        <td key={r.id}>{rub(r.path[i].value)}</td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))}
             </tbody>
           </table>
         </div>
       </Disclosure>
-      <p className="footnote">
-        Сценарии — допущения EPS × P/E, без налогов и комиссий. Доходность не гарантирована.
-      </p>
-      <a className="button" href="#forecast">
-        Изменить сценарии 2026 <ArrowRight size={15} />
-      </a>
     </>
   );
 }

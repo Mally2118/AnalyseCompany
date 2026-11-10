@@ -31,7 +31,7 @@ it('создает читаемый XLSX с исходными пропуска�
     buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }),
     restored = XLSX.read(buffer, { type: 'buffer', cellFormula: true });
   expect(restored.SheetNames).toContain('Сценарные прогнозы');
-  expect(restored.SheetNames).toHaveLength(19);
+  expect(restored.SheetNames).toHaveLength(20);
   const p = restored.Sheets['Марковиц'];
   expect(p.A2.v).toBe(0);
   expect(p.B2.f).toBe('1-A2');
@@ -68,4 +68,23 @@ it('печатный PDF-отчет содержит все расчеты, гр
   expect(html).toContain('Негативный');
   expect(html).toContain('e-disclosure.ru');
   expect(reportHTML({ ...ctx, amount: 200000 })).not.toBe(html);
+});
+
+it('исторический калькулятор выгружается в XLSX, CSV и PDF из той же модели', async () => {
+  const ctx = context();
+  const wb = buildWorkbook(XLSX, ctx);
+  const h = ctx.model.historyCalculation!;
+  const sheet = wb.Sheets['Исторический расчёт'];
+  expect(sheet.D3.f).toBe('B3*(1+C3)^A3');
+  expect(sheet.D3.v).toBeCloseTo(h.value, 8);
+  expect(sheet.C3.v).toBe(h.cagr);
+  expect(reportHTML(ctx)).toContain('Математическая иллюстрация');
+  expect(reportHTML(ctx)).toContain('Расчёт при сохранении исторической доходности');
+  const { financialCSVRows } = await import('../src/utils/export');
+  const rows = financialCSVRows(ctx).filter(
+    (r) => r[2] === 'Стоимость при сохранении исторического CAGR',
+  );
+  expect(rows).toHaveLength(2);
+  expect(rows.at(-1)![3]).toBe(h.value);
+  expect(rows.at(-1)![9]).toBe('Расчётное');
 });

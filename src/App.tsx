@@ -1,3 +1,4 @@
+import type { CalculatorMode } from './calculations/calculator';
 import { MetricGuide } from './pages/MetricGuide';
 import { type DividendMode, type ProjectionPlans } from './calculations/projection';
 import { useEffect, useMemo, useState } from 'react';
@@ -27,7 +28,7 @@ import type { DataSet } from './services/data';
 import { loadData } from './services/data';
 import { useModel } from './services/model';
 import type { Mode, ReturnKind } from './data/types';
-import { defaultScenarios } from './calculations/scenarios';
+import { scenariosForData } from './calculations/scenarios';
 import { Overview } from './pages/Overview';
 import { Financial } from './pages/Financial';
 import { Risk } from './pages/Risk';
@@ -107,10 +108,11 @@ function Dashboard({ data }: { data: DataSet }) {
     [amount, setAmount] = useState(100000),
     [horizon, setHorizon] = useState(1),
     [method, setMethod] = useState('manual'),
+    [calculatorMode, setCalculatorMode] = useState<CalculatorMode>('history'),
     [dividendMode, setDividendMode] = useState<DividendMode>('reinvest'),
     [plans, setPlans] = useState<ProjectionPlans>({}),
     [guideMetric, setGuideMetric] = useState(() => location.hash.split('/')[1]),
-    [scenarios, setScenarios] = useState(() => structuredClone(defaultScenarios)),
+    [scenarios, setScenarios] = useState(() => scenariosForData(data.financial, data.market)),
     [theme, setTheme] = useState(safeTheme),
     [mobile, setMobile] = useState(false),
     [exports, setExports] = useState(false),
@@ -127,6 +129,7 @@ function Dashboard({ data }: { data: DataSet }) {
     horizon,
     dividendMode,
     plans,
+    calculatorMode,
   );
   useEffect(() => {
     const update = () => {
@@ -153,6 +156,9 @@ function Dashboard({ data }: { data: DataSet }) {
     if (m && method === 'sharpe') setWeight(m.max.weight);
   }, [model.model?.min.weight, model.model?.max.weight, method]);
   const controls = {
+    calculatorMode,
+    setCalculatorMode,
+    kind,
     model,
     weight,
     setWeight,
@@ -395,7 +401,7 @@ function Dashboard({ data }: { data: DataSet }) {
               scenarios={scenarios}
               setScenarios={setScenarios}
               reset={() => {
-                setScenarios(structuredClone(defaultScenarios));
+                setScenarios(scenariosForData(data.financial, data.market));
                 setPlans({});
               }}
               mode={mode}

@@ -11,7 +11,7 @@ export type ProjectionPlans = Record<string, Partial<Record<Company, Partial<Yea
 /** Educational terminal assumptions, not estimated returns or analyst consensus. */
 const terminalGrowth = {
   negative: { SBER: 0, T: 5 },
-  base: { SBER: 5, T: 10 },
+  base: { SBER: 5, T: 5 },
   positive: { SBER: 8, T: 15 },
 };
 export function defaultPlan(s: Scenario, c: Company): YearAssumption[] {

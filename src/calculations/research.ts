@@ -10,7 +10,7 @@ import { historicalValuations } from './valuation';
 import { project, type DividendMode, type ProjectionPlans } from './projection';
 import { statistics as portfolioStatistics } from './market';
 import { portfolioReturns } from './portfolio';
-import { allocation } from './calculator';
+import { allocation, historicalCalculation, type CalculatorMode } from './calculator';
 import { pct, rub } from '../utils/format';
 const securities: Company[] = ['SBER', 'T'];
 export function marketResearch(data: DataSet, kind: ReturnKind, start: number, rf: number) {
@@ -51,6 +51,7 @@ export function createResearchModel(
   horizon = 1,
   dividendMode: DividendMode = 'reinvest',
   plans?: ProjectionPlans,
+  calculatorMode: CalculatorMode = 'history',
 ) {
   const analysis = marketResearch(data, kind, start, rf),
     { period, model, stats, wealth } = analysis;
@@ -163,6 +164,7 @@ export function createResearchModel(
     rf,
     historical.selected.series,
   );
+  const historyCalculation = historicalCalculation(amount, historical.selected.cagr, horizon);
   const capital = allocation(amount, weight);
   const summary = conclusions(data.financial, stats, model, { sameHorizon: true });
   summary.push(
@@ -171,8 +173,15 @@ export function createResearchModel(
   summary.push(
     `Капитал ${rub(amount)}: Сбер ${rub(capital.SBER)}, Т ${rub(capital.T)}. Результаты при горизонте ${horizon} лет: ${projections.map((r) => `${r.name.toLowerCase()} — ${rub(r.value)}, прибыль/убыток ${rub(r.profit)}, CAGR ${pct(r.cagr)}`).join('; ')}. Годовые EPS, P/E и дивиденды рассчитываются раздельно; доходность первого года не повторяется.`,
   );
+  summary.push(
+    calculatorMode === 'history'
+      ? `Начальный капитал ${rub(amount)}, на горизонте ${horizon} лет. Расчёт при сохранении исторической доходности: CAGR ${pct(historyCalculation?.cagr)}, за ${horizon} лет капитал ${rub(historyCalculation?.value)}, прибыль/убыток ${rub(historyCalculation?.profit)}. Математическая иллюстрация, не прогноз.`
+      : 'Выбран сценарный прогноз EPS × P/E: рост прибыли, переоценка и выплаты задаются отдельно от исторической доходности. Учебные допущения, не эконометрический прогноз.',
+  );
   return {
     ...analysis,
+    calculatorMode,
+    historyCalculation,
     comparison,
     historical,
     fiveYear,

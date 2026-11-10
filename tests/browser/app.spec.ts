@@ -55,6 +55,7 @@ test('режимы компаний, восемь страниц и измене
   await expect(page.locator('.analysis-dates')).not.toContainText('Общий период сокращён');
   await page.locator('nav').getByRole('link', { name: 'Калькулятор', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Калькулятор' })).toBeVisible();
+  await page.getByLabel('Режим расчёта').selectOption('scenario');
   const old = await page.locator('.scenario-value').allTextContents();
   await page.getByLabel('Сумма инвестиций', { exact: true }).fill('250000');
   expect(await page.locator('.scenario-value').allTextContents()).not.toEqual(old);
@@ -170,12 +171,12 @@ test('оба ползунка, точный ручной ввод и рублё�
   await expect(slider).toHaveAttribute('min', '10000');
   await expect(slider).toHaveAttribute('max', '1000000');
   await expect(slider).toHaveAttribute('step', '10000');
-  const initial = await page.locator('.scenario-value').allTextContents();
+  const initial = await page.locator('.calculator-value').allTextContents();
   const initialScale = await page.locator('.chart svg text').allTextContents();
   expect(initialScale.some((v) => /000/.test(v))).toBe(true);
   await slider.fill('250000');
   await expect(input).toHaveValue('250000');
-  expect(await page.locator('.scenario-value').allTextContents()).not.toEqual(initial);
+  expect(await page.locator('.calculator-value').allTextContents()).not.toEqual(initial);
   await expect(page.locator('.capital-conclusion')).toContainText('250');
   await expect
     .poll(() => page.locator('.chart svg text').allTextContents())
@@ -189,9 +190,9 @@ test('оба ползунка, точный ручной ввод и рублё�
   await expect(page.locator('.investment-split')).toContainText('30 864');
   await expect(page.locator('.investment-split')).toContainText('92 592');
   await expect(page.locator('.capital-conclusion')).toContainText('123 456');
-  const values = await page.locator('.scenario-value').allTextContents();
+  const values = await page.locator('.calculator-value').allTextContents();
   await page.getByLabel('Инвестиционный горизонт', { exact: true }).fill('2');
-  expect(await page.locator('.scenario-value').allTextContents()).not.toEqual(values);
+  expect(await page.locator('.calculator-value').allTextContents()).not.toEqual(values);
   await expect(page.locator('.capital-conclusion')).toContainText('горизонте 2 лет');
 });
 test('адаптивность, светлая тема и навигация телефона', async ({ page }) => {
@@ -290,16 +291,16 @@ test('многолетний прогноз, выплаты и годовые п
   await page.goto('./#calculator');
   await page.getByLabel('Сумма инвестиций', { exact: true }).fill('500000');
   await page.getByRole('slider', { name: 'Доля Сбербанка' }).fill('0');
-  await page.getByLabel('Режим прогноза').selectOption('multi');
+  await page.getByLabel('Режим расчёта').selectOption('scenario');
   await page.getByLabel('Инвестиционный горизонт', { exact: true }).fill('5');
   const positive = page
     .locator('.card')
     .filter({ has: page.getByRole('heading', { name: 'Позитивный', exact: true }) });
   await expect(positive.locator('.scenario-value')).toContainText('2 744 272');
-  await expect(positive).toContainText('40,6%');
+  await expect(positive).toContainText('40,57%');
+  await page.getByText('Годовые предпосылки', { exact: true }).click();
   await page.getByLabel('Дивиденды в прогнозе').selectOption('cash');
   await expect(positive.locator('.scenario-value')).toContainText('2 570 019');
-  await page.getByText('Годовые предпосылки', { exact: true }).click();
   await page.getByLabel('Сценарий траектории').selectOption('positive');
   const before = await positive.locator('.scenario-value').innerText();
   await page.getByLabel('2027 T growth', { exact: true }).fill('10');
@@ -385,4 +386,166 @@ test('мобильная подсказка остаётся в экране и 
   await popup.getByRole('link', { name: 'Полная формула и пример →' }).click();
   await expect(page).toHaveURL(/#guide\/cagr$/);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('исторический режим по умолчанию: отрицательный CAGR, периоды и дивиденды', async ({
+  page,
+}) => {
+  await page.goto('./#calculator');
+  await expect(page.getByLabel('Режим расчёта')).toHaveValue('history');
+  await expect(
+    page.getByRole('heading', { name: 'Расчёт при сохранении исторической доходности' }),
+  ).toBeVisible();
+  await expect(page.locator('.scenario-value')).toHaveCount(0);
+  await page.getByLabel('Сумма инвестиций', { exact: true }).fill('500000');
+  await page.getByLabel('Инвестиционный горизонт', { exact: true }).fill('5');
+  const weight = page.getByRole('slider', { name: 'Доля Сбербанка' });
+  await weight.fill('0');
+  await expect(page.locator('.calculator-value')).toHaveText('229 377 ₽');
+  await expect(page.locator('.historical-result')).toContainText('-270 623');
+  await expect(page.locator('.calculator-history')).toContainText('-14,43%');
+  await weight.fill('100');
+  await expect(page.locator('.calculator-value')).toHaveText('513 687 ₽');
+  await page.getByRole('button', { name: 'С дивидендами', exact: true }).click();
+  await expect(page.locator('.calculator-value')).toHaveText('763 429 ₽');
+  await weight.fill('0');
+  await expect(page.locator('.calculator-value')).toHaveText('250 558 ₽');
+  await page.getByLabel('Рыночный период').selectOption('2023');
+  const before = await page.locator('.calculator-value').innerText();
+  expect(before).not.toBe('250 558 ₽');
+  await page.getByRole('button', { name: 'Ценовая доходность', exact: true }).click();
+  expect(await page.locator('.calculator-value').innerText()).not.toBe(before);
+  await page.getByLabel('Режим расчёта').selectOption('scenario');
+  await expect(page.locator('.scenario-value')).toHaveCount(3);
+  await expect(page.getByRole('status')).toContainText('ростом EPS');
+  await page.getByLabel('Режим расчёта').selectOption('history');
+  await expect(page.locator('.calculator-value')).toBeVisible();
+});
+
+test('типографика: локальная кириллица, контраст AA и отсутствие переполнения всех страниц', async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  const routes = [
+    'overview',
+    'financial',
+    'risk',
+    'portfolio',
+    'calculator',
+    'forecast',
+    'stability',
+    'guide',
+    'guide/cagr',
+    'sources',
+  ];
+  const failures: string[] = [];
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1050 });
+    for (const theme of ['dark', 'light']) {
+      for (const route of routes) {
+        await page.goto(`./#${route}`);
+        await expect(page.locator('main')).toBeVisible();
+        await page.evaluate(async (t) => {
+          document.documentElement.dataset.theme = t;
+          await document.fonts.ready;
+          await new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          );
+        }, theme);
+        expect(
+          await page.evaluate(() =>
+            document.fonts.check('17px "Source Serif 4"', 'Русский текст Ёж'),
+          ),
+        ).toBe(true);
+        if (
+          [
+            'financial',
+            'risk',
+            'portfolio',
+            'calculator',
+            'forecast',
+            'stability',
+            'sources',
+          ].includes(route)
+        ) {
+          for (const detail of await page.locator('details > summary').all()) await detail.click();
+        }
+        const audit = await page.evaluate(() => {
+          const rgba = (value: string): number[] => (value.match(/[\d.]+/g) ?? []).map(Number);
+          const over = (fg: number[], bg: number[]) => {
+            const alpha = fg[3] ?? 1;
+            return [0, 1, 2].map((i) => fg[i] * alpha + bg[i] * (1 - alpha)).concat(1);
+          };
+          const luminance = (v: number[]) =>
+            v
+              .slice(0, 3)
+              .map((c) => {
+                const s = c / 255;
+                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              })
+              .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+          const bad: string[] = [];
+          for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+            if (
+              !el.childNodes.length ||
+              ![...el.childNodes].some(
+                (n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim(),
+              )
+            )
+              continue;
+            if (el.closest('.katex, .company-logo, .brand-mark, [disabled]')) continue;
+            const style = getComputedStyle(el),
+              rect = el.getBoundingClientRect();
+            if (
+              !rect.width ||
+              !rect.height ||
+              rect.right <= 0 ||
+              rect.left >= innerWidth ||
+              style.visibility === 'hidden' ||
+              !el.checkVisibility()
+            )
+              continue;
+            const parents: Element[] = [];
+            for (let p: Element | null = el; p; p = p.parentElement) parents.unshift(p);
+            let bg = [255, 255, 255, 1];
+            for (const p of parents) bg = over(rgba(getComputedStyle(p).backgroundColor), bg);
+            const fg = over(rgba(el.closest('svg') ? style.fill : style.color), bg);
+            const a = luminance(fg),
+              b = luminance(bg);
+            const contrast = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+            const size = parseFloat(style.fontSize);
+            const large = size >= 24 || (size >= 18.66 && parseInt(style.fontWeight) >= 700);
+            const name = `${el.tagName}.${el.className} ${el.textContent?.trim().slice(0, 32)}`;
+            if (contrast < (large ? 3 : 4.5) - 0.01)
+              bad.push(`Контраст ${contrast.toFixed(2)}: ${name}`);
+            if (size < 14) bad.push(`Шрифт ${size}px: ${name}`);
+          }
+          return {
+            bad,
+            overflow: document.documentElement.scrollWidth > innerWidth,
+            bodyFont: getComputedStyle(document.body).fontFamily,
+          };
+        });
+        expect(audit.bodyFont).toContain('Source Serif 4');
+        if (audit.overflow)
+          failures.push(`${width}/${theme}/${route}: горизонтальное переполнение`);
+        failures.push(...audit.bad.map((s) => `${width}/${theme}/${route}: ${s}`));
+      }
+    }
+  }
+  expect(failures).toEqual([]);
+  await page.setViewportSize({ width: 1440, height: 1050 });
+  await page.goto('./#calculator');
+  await page.screenshot({
+    path: '/tmp/invest-calculator-desktop.png',
+    fullPage: true,
+    animations: 'disabled',
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  await page.screenshot({
+    path: '/tmp/invest-calculator-mobile.png',
+    fullPage: true,
+    animations: 'disabled',
+  });
 });
