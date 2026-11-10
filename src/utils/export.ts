@@ -1,3 +1,5 @@
+import { sensitivityRows } from './recovery-export';
+import { recoveryMethodNames } from '../calculations/recovery';
 import { historicalExplanation } from '../calculations/calculator';
 import { scenarioMethodology } from '../calculations/scenarios';
 import katex from 'katex';
@@ -142,6 +144,69 @@ export function financialCSVRows(ctx: ExportContext) {
       }),
       historicalExplanation,
     ]);
+  if (ctx.data.recovery) {
+    const r = ctx.data.recovery;
+    for (const q of r.observations) {
+      rows.push([
+        'T',
+        q.date,
+        'Фактическая котировка TQBR',
+        q.actualPrice,
+        '₽',
+        ctx.data.market.sources.find((s) => s.id === 'moex-T')?.url,
+        'TQBR',
+        'MOEX ISS',
+        q.reason,
+        q.actualPrice === null ? 'Нет торговой котировки' : 'Фактическое',
+        'none',
+        JSON.stringify({ actualPrice: q.actualPrice, estimatedPrice: null, tradable: q.tradable }),
+        'Исходный ряд сохранён',
+      ]);
+      if (q.estimatedPrice !== null)
+        rows.push([
+          'T',
+          q.date,
+          'Условная стоимость: восстановление',
+          q.estimatedPrice,
+          '₽',
+          'public/data/recovery.json',
+          'Ретроспективный мост',
+          'Модель',
+          q.reason,
+          'Оценочное',
+          q.method,
+          JSON.stringify({
+            model: r.selectedFactorModel,
+            coefficients: r.models.find((m) => m.method === r.selectedFactorModel)?.coefficients,
+            left: '2024-02-15',
+            right: '2024-03-18',
+          }),
+          'Нет торгов и возможности сделки; использован будущий правый якорь',
+        ]);
+    }
+    for (const row of sensitivityRows(ctx.data, ctx.kind, ctx.start, ctx.rf, ctx.weight))
+      rows.push([
+        'Портфель',
+        ctx.start,
+        `Чувствительность: ${row[0]}`,
+        row[2],
+        'доля/коэффициент',
+        'public/data/recovery.json',
+        'Только исследование',
+        'Модель',
+        `Фактическая база: ${row[1]}`,
+        'Расчётное на оценочных данных',
+        'Месячные моменты',
+        JSON.stringify({
+          kind: ctx.kind,
+          rf: ctx.rf,
+          weight: ctx.weight,
+          from: ctx.model.period.from,
+          till: ctx.model.period.till,
+        }),
+        'Основная оптимизация не изменена; контрфактический ряд не исполнимый бэктест',
+      ]);
+  }
   return rows;
 }
 export function exportCSV(ctx: ExportContext) {
@@ -675,10 +740,147 @@ export function buildWorkbook(XLSX: typeof import('xlsx'), ctx: ExportContext) {
     ],
     { origin: -1 },
   );
+  if (data.recovery) {
+    const r = data.recovery;
+    sheet('Котировки и оценки', [
+      [
+        'Дата',
+        'Факт T, ₽',
+        'Условная оценка, ₽',
+        'Статус происхождения',
+        'Метод',
+        'Категория',
+        'Доступна сделка',
+        'Причина',
+        'Регрессия, ₽',
+        'Интерполяция, ₽',
+        'Нижняя граница',
+        'Верхняя граница',
+      ],
+      ...r.observations.map((q) => [
+        q.date,
+        q.actualPrice,
+        q.estimatedPrice,
+        q.status,
+        q.method,
+        q.category,
+        q.tradable,
+        q.reason,
+        q.regressionPrice,
+        q.interpolatedPrice,
+        q.lower,
+        q.upper,
+      ]),
+    ]);
+    sheet('Модель восстановления', [
+      [
+        'Модель',
+        'Обучение с',
+        'по',
+        'n',
+        'α',
+        'β IMOEX',
+        'β SBER',
+        'R² обучения',
+        'VIF',
+        'Остаток σ',
+        'Остаток lag1',
+      ],
+      ...r.models.map((m) => [
+        m.method,
+        m.from,
+        m.till,
+        m.n,
+        m.coefficients[0],
+        m.coefficients[1],
+        m.coefficients[2] ?? null,
+        m.r2,
+        m.vif,
+        m.residuals.std,
+        m.residuals.lag1,
+      ]),
+    ]);
+    sheet('Качество восстановления', [
+      [
+        'Проверка',
+        'Метод',
+        'Режим',
+        'Длина блока',
+        'Блоков',
+        'MAE ₽',
+        'RMSE ₽',
+        'Относительная RMSE',
+        'Допустим VIF',
+      ],
+      ...r.validation.map((q) => [
+        q.phase,
+        q.method,
+        q.mode,
+        q.length,
+        q.folds,
+        q.mae,
+        q.rmse,
+        q.relativeRmse,
+        q.eligible,
+      ]),
+    ]);
+    sheet('Блоки восстановления', [
+      [
+        'Режим рынка',
+        'С',
+        'По',
+        'Метод',
+        'Режим проверки',
+        'Длина',
+        'Фаза',
+        'Обучение по',
+        'MAE ₽',
+        'RMSE ₽',
+        'Относительная RMSE',
+      ],
+      ...r.folds.map((q) => [
+        q.regime,
+        q.from,
+        q.till,
+        q.method,
+        q.mode,
+        q.length,
+        q.phase,
+        q.trainTill ?? null,
+        q.mae,
+        q.rmse,
+        q.relativeRmse,
+      ]),
+    ]);
+    sheet('Чувствительность', [
+      ['Показатель', 'Только факты', 'Факты + условные оценки'],
+      ...sensitivityRows(data, ctx.kind, ctx.start, ctx.rf, ctx.weight),
+    ]);
+    XLSX.utils.sheet_add_aoa(
+      meta,
+      [
+        [
+          'Исследование восстановления',
+          `Оценочные даты: ${r.summary.estimated}; фактические дополнения: ${r.summary.actualRecovered}; основная модель использует только факты`,
+        ],
+        [
+          'Граница использования',
+          'Условные оценки не подтверждают возможность сделки, будущую EPS или позитивный прогноз',
+        ],
+        ['Метод восстановления', r.selectedMethod],
+        ...r.sources.map((s) => [s.title, s.url]),
+      ],
+      { origin: -1 },
+    );
+  }
   wb.Workbook = { CalcPr: { calcMode: 'auto', fullCalcOnLoad: true } } as typeof wb.Workbook;
   return wb;
 }
-function svgChart(data: { label: string; a: number | null; b: number | null }[], title: string) {
+function svgChart(
+  data: { label: string; a: number | null; b: number | null }[],
+  title: string,
+  options: { legend?: string; first?: string; second?: string; dash?: boolean } = {},
+) {
   const valid = data.flatMap((d) => [d.a, d.b]).filter((v): v is number => v !== null);
   if (!valid.length) return '';
   const min = Math.min(0, ...valid),
@@ -688,7 +890,7 @@ function svgChart(data: { label: string; a: number | null; b: number | null }[],
     h = 190,
     x = (i: number) => 45 + (i * (w - 70)) / Math.max(1, data.length - 1),
     y = (v: number) => h - 28 - ((v - min) / range) * (h - 50);
-  const line = (key: 'a' | 'b', color: string) => {
+  const line = (key: 'a' | 'b', color: string, dash = false) => {
     let path = '',
       open = false;
     data.forEach((d, i) => {
@@ -700,9 +902,9 @@ function svgChart(data: { label: string; a: number | null; b: number | null }[],
       path += `${open ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)} `;
       open = true;
     });
-    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2"/>`;
+    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2" ${dash ? 'stroke-dasharray="7 5"' : ''}/>`;
   };
-  return `<figure><figcaption>${esc(title)} · зелёный: SBER, синий: T</figcaption><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="100%" height="190">${[min, (min + max) / 2, max].map((v) => `<line x1="45" x2="650" y1="${y(v)}" y2="${y(v)}" stroke="#ddd"/><text x="0" y="${y(v) + 4}" font-size="10">${fmt(v, 0)}</text>`).join('')}${line('a', '#138f79')}${line('b', '#416be0')}<text x="45" y="185" font-size="11">${esc(data[0]?.label)}</text><text x="580" y="185" font-size="11">${esc(data.at(-1)?.label)}</text></svg></figure>`;
+  return `<figure><figcaption>${esc(title)} · ${esc(options.legend ?? 'зелёный: SBER, синий: T')}</figcaption><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="100%" height="190">${[min, (min + max) / 2, max].map((v) => `<line x1="45" x2="650" y1="${y(v)}" y2="${y(v)}" stroke="#ddd"/><text x="0" y="${y(v) + 4}" font-size="10">${fmt(v, 0)}</text>`).join('')}${line('a', options.first ?? '#138f79')}${line('b', options.second ?? '#416be0', options.dash)}<text x="45" y="185" font-size="11">${esc(data[0]?.label)}</text><text x="580" y="185" font-size="11">${esc(data.at(-1)?.label)}</text></svg></figure>`;
 }
 export function reportHTML(ctx: ExportContext) {
   const { data, model } = ctx;
@@ -714,6 +916,54 @@ export function reportHTML(ctx: ExportContext) {
     null;
   const table = (headers: string[], rows: unknown[][]) =>
     `<table><thead><tr>${headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${row.map((v) => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const recovery = data.recovery;
+  const recoveryModel = recovery?.models.find((m) => m.method === recovery.selectedFactorModel);
+  const recoveryAppendix = recovery
+    ? `<h2>Исследование пропущенных котировок T</h2><p>Пропуски ${recovery.summary.missing}; дополнено фактов ${recovery.summary.actualRecovered}; условно оценено ${recovery.summary.estimated}; без оценки ${recovery.summary.leftUnestimated}. Основные таблицы и модель Марковица используют только исходные фактические данные.</p><p>Метод: ${esc(recoveryMethodNames[recovery.selectedMethod])}. Регрессия log-доходностей на IMOEX: α ${fmt(recoveryModel?.coefficients[0], 6)}, β ${fmt(recoveryModel?.coefficients[1], 4)}, R² обучения ${fmt(recoveryModel?.r2, 3)}. Правый якорь известен постфактум; это не доступный инвестору прогноз и не цена возможной сделки.</p>${svgChart(
+        recovery.observations
+          .filter((q) => q.date >= '2024-02-01' && q.date <= '2024-03-29')
+          .map((q) => ({
+            label: q.date,
+            a: q.actualPrice,
+            b:
+              q.estimatedPrice ??
+              (['2024-02-15', '2024-03-18'].includes(q.date) ? q.actualPrice : null),
+          })),
+        'Условные цены T в период остановки, ₽',
+        {
+          legend: 'синий: факт T; пунктир: условная оценка T',
+          first: '#315bbb',
+          second: '#806018',
+          dash: true,
+        },
+      )}${table(
+        ['Проверка', 'Метод', 'MAE ₽', 'RMSE ₽', 'Относительная RMSE'],
+        recovery.validation
+          .filter((q) => q.length === null && q.mode === 'bridge')
+          .map((q) => [
+            q.phase,
+            recoveryMethodNames[q.method],
+            fmt(q.mae, 3),
+            fmt(q.rmse, 3),
+            pct(q.relativeRmse, 2),
+          ]),
+      )}<h3>Факты и условные оценки: чувствительность</h3><p>Годовая доходность — арифметическая оценка; годовая ковариация = месячная ×12. Основная оптимизация не меняется; контрфактические моменты не доказывают исполнимость ребалансировки во время остановки.</p>${table(
+        ['Показатель', 'Только факты', 'Факты + условные оценки'],
+        sensitivityRows(data, ctx.kind, ctx.start, ctx.rf, ctx.weight).map((row) =>
+          row.map((v, i) => (i === 0 ? v : fmt(typeof v === 'number' ? v : null, 6))),
+        ),
+      )}<h3>Все пропуски</h3>${table(
+        ['Дата', 'Условная цена ₽', 'Метод', 'Причина'],
+        recovery.observations
+          .filter((q) => q.actualPrice === null)
+          .map((q) => [
+            q.date,
+            q.estimatedPrice === null ? 'Не оценивается' : rub(q.estimatedPrice, 3),
+            recoveryMethodNames[q.method],
+            q.reason,
+          ]),
+      )}<ul>${recovery.methodology.map((t) => `<li>${esc(t)}</li>`).join('')}</ul><p>Восстановление не обосновывает рост EPS и не меняет позитивный сценарий — оптимистичный учебный стресс-тест.</p><ul>${recovery.sources.map((s) => `<li>${esc(s.title)}: <a href="${esc(s.url)}">${esc(s.url)}</a></li>`).join('')}</ul>`
+    : '';
   const financial = (['SBER', 'T'] as Company[])
     .map(
       (c) =>
@@ -922,7 +1172,7 @@ export function reportHTML(ctx: ExportContext) {
     data.financial.facts
       .filter((f) => f.note)
       .map((f) => [f.company, f.year, metrics[f.metric].label, f.sourceId, f.note]),
-  )}</body></html>`;
+  )}${recoveryAppendix}</body></html>`;
 }
 export function exportPDF(ctx: ExportContext) {
   const win = window.open('', '_blank');

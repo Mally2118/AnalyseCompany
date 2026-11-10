@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { validateRecovery } from '../src/services/recovery';
 import { readFile } from 'node:fs/promises';
 import { validateFinancial, validateMarket } from '../src/services/validation';
 import { createResearchModel } from '../src/calculations/research';
@@ -39,4 +41,20 @@ for (const start of [2021, 2023])
   }
 console.log(
   `Проверено: ${financial.facts.length} финансовых полей, ${market.quotes.length} дневных дат, ${market.monthly.length} месяцев с базой декабря 2020.`,
+);
+
+const marketRaw = await readFile(new URL('../public/data/market.json', import.meta.url), 'utf8');
+const recovery = validateRecovery(
+  JSON.parse(await readFile(new URL('../public/data/recovery.json', import.meta.url), 'utf8')),
+  market,
+  createHash('sha256').update(marketRaw).digest('hex'),
+);
+const inputsRaw = await readFile(
+  new URL('../public/data/recovery-inputs.json', import.meta.url),
+  'utf8',
+);
+if (recovery.inputsFileSha256 !== createHash('sha256').update(inputsRaw).digest('hex'))
+  throw new Error('Изменены факторы восстановления; пересоберите исследование');
+console.log(
+  `Исследование: ${recovery.summary.missing} пропуска; фактических дополнений ${recovery.summary.actualRecovered}; условных оценок ${recovery.summary.estimated}; выбран ${recovery.selectedMethod}. Исходная модель не изменена.`,
 );

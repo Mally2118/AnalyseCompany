@@ -541,6 +541,9 @@ export function Calculator(p: PortfolioControls) {
               }
             >
               <span className="scenario-value">{rub(r.value)}</span>
+              {r.id === 'positive' && (
+                <p className="footnote">Оптимистичный учебный стресс-тест.</p>
+              )}
               <div className="scenario-profit">
                 Прибыль / убыток <MetricHelp metric="value" />{' '}
                 <strong className={r.profit >= 0 ? 'positive' : 'negative'}>{rub(r.profit)}</strong>

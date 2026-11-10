@@ -82,6 +82,12 @@ export function Forecast({
               ) : (
                 <p>Нет подтверждённой EPS для оценки.</p>
               )}
+              {s.id === 'positive' && (
+                <p className="footnote">
+                  Оптимистичный учебный стресс-тест без оценки вероятности. Рост EPS, P/E и
+                  дивиденды заданы предпосылками; восстановление котировок их не обосновывает.
+                </p>
+              )}
               <Disclosure title="Настроить сценарий">
                 <p className="footnote">{s.premise}</p>
                 {cs.map((c) => (

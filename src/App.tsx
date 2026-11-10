@@ -392,7 +392,17 @@ function Dashboard({ data }: { data: DataSet }) {
             <Overview data={data} model={model} mode={mode} navigate={navigate} />
           )}{' '}
           {page === 'financial' && <Financial data={data} mode={mode} />}{' '}
-          {page === 'risk' && <Risk data={data} model={model} mode={mode} />}{' '}
+          {page === 'risk' && (
+            <Risk
+              data={data}
+              model={model}
+              mode={mode}
+              kind={kind}
+              start={start}
+              rf={rf}
+              weight={weight}
+            />
+          )}{' '}
           {page === 'portfolio' && <PortfolioPage {...controls} />}{' '}
           {page === 'calculator' && <Calculator {...controls} />}{' '}
           {page === 'forecast' && (

@@ -114,7 +114,7 @@ test('XLSX, CSV и печатный PDF содержат данные', async ({
   await page.getByRole('button', { name: 'PDF-отчёт', exact: false }).click();
   const report = await reportPromise;
   await expect(report.getByRole('heading', { name: 'InvestAnalytics', exact: true })).toBeVisible();
-  await expect(report.locator('svg')).toHaveCount(5);
+  await expect(report.locator('svg')).toHaveCount(6);
   await expect(report.locator('body')).toContainText('68,872');
   await expect(report.locator('body')).toContainText('2021-12-30');
   await expect(
@@ -468,7 +468,14 @@ test('типографика: локальная кириллица, контр�
             'sources',
           ].includes(route)
         ) {
-          for (const detail of await page.locator('details > summary').all()) await detail.click();
+          for (
+            let i = 0;
+            i < 25 && (await page.locator('details:not([open]) > summary').count());
+            i++
+          ) {
+            const summary = page.locator('details:not([open]) > summary').first();
+            await summary.click();
+          }
         }
         const audit = await page.evaluate(() => {
           const rgba = (value: string): number[] => (value.match(/[\d.]+/g) ?? []).map(Number);
@@ -548,4 +555,69 @@ test('типографика: локальная кириллица, контр�
     fullPage: true,
     animations: 'disabled',
   });
+});
+
+test('эконометрическое исследование отделено от фактических KPI и основной оптимизации', async ({
+  page,
+}) => {
+  await page.goto('./#risk');
+  await expect(page.getByRole('heading', { name: 'Доходность и риск', exact: true })).toBeVisible();
+  const actual = await page.locator('.kpi-value').allTextContents();
+  await page
+    .getByRole('button', { name: 'Фактические + восстановленные данные', exact: true })
+    .click();
+  await expect(page.locator('.recovery-chart')).toBeVisible();
+  const segment = page.locator('.recovery-chart path.recharts-line-curve[stroke-dasharray="7 5"]');
+  await expect(segment).toHaveAttribute('d', /^M/);
+  const box = await segment.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await expect(page.locator('.recovery-tooltip')).toContainText('Условная оценка');
+  await expect(page.locator('.recovery-tooltip')).toContainText('регрессия');
+  expect(await page.locator('.kpi-value').allTextContents()).toEqual(actual);
+  const zoom = page.getByRole('checkbox', { name: 'Участок 01.02–29.03.2024 (масштаб графика)' });
+  const focusedPath = await segment.getAttribute('d');
+  await zoom.uncheck();
+  expect(await segment.getAttribute('d')).not.toBe(focusedPath);
+  await zoom.check();
+  await page.getByText('Эконометрическая модель восстановления', { exact: true }).click();
+  await expect(page.locator('.recovery-quality')).toContainText('IMOEX');
+  await expect(page.locator('main')).toContainText('фактических котировок дополнено 0');
+  const sensitivity = page.getByRole('checkbox', {
+    name: 'Оценка чувствительности к восстановлению пропусков',
+  });
+  await sensitivity.check();
+  await expect(page.locator('.research-comparison')).toContainText('46 → 48');
+  expect(await page.locator('.kpi-value').allTextContents()).toEqual(actual);
+  await page.getByLabel('Рыночный период').selectOption('2023');
+  await expect(page.locator('.research-comparison')).toContainText('34 → 36');
+  await page.getByRole('button', { name: 'С дивидендами', exact: true }).click();
+  await expect(page.locator('.research-comparison')).toContainText('34 → 36');
+  await page.getByText('Все пропуски и источники', { exact: true }).click();
+  await expect(page.locator('main')).toContainText('05.10.2025');
+  await expect(page.locator('main')).toContainText('Не оценивается');
+  await page.getByRole('button', { name: 'Фактические данные', exact: true }).click();
+  await expect(page.locator('.recovery-chart')).toHaveCount(0);
+  await sensitivity.uncheck();
+  await expect(page.locator('.research-comparison')).toHaveCount(0);
+  await page.locator('nav').getByRole('link', { name: 'Портфель Марковица' }).click();
+  await page.getByRole('button', { name: 'Минимальный риск', exact: true }).click();
+  await expect(page.getByRole('slider', { name: 'Доля Сбербанка' })).toHaveValue('52');
+});
+
+test('устаревшее исследование не подменяет котировки и не ломает платформу', async ({ page }) => {
+  await page.route('**/data/recovery.json', async (route) => {
+    const r = JSON.parse(readFileSync('public/data/recovery.json', 'utf8')) as {
+      marketFileSha256: string;
+    };
+    r.marketFileSha256 = '0'.repeat(64);
+    await route.fulfill({ json: r });
+  });
+  await page.goto('./#risk');
+  await expect(page.getByRole('heading', { name: 'Доходность и риск', exact: true })).toBeVisible();
+  await expect(page.locator('main')).toContainText('Исследование устарело');
+  await expect(
+    page.getByRole('button', { name: 'Фактические + восстановленные данные' }),
+  ).toHaveCount(0);
+  await expect(page.locator('.kpi-value')).toHaveCount(4);
 });

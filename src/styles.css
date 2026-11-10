@@ -2736,3 +2736,56 @@ select,
 .year-assumption {
   font-size: 16px;
 }
+
+:root {
+  --recovery-line: #e9c97f;
+}
+:root[data-theme='light'] {
+  --recovery-line: #806018;
+}
+.recovery-controls {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 18px;
+}
+.recovery-controls button {
+  flex: 1;
+}
+.recovery-tooltip {
+  max-width: min(330px, 80vw);
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 15px;
+  border-radius: 8px;
+}
+.recovery-tooltip p {
+  font: 14px/1.6 var(--font-ui);
+  margin: 5px 0;
+}
+.research-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 22px 0;
+  font-size: 17px;
+}
+.research-toggle input {
+  margin-top: 7px;
+  accent-color: var(--mint);
+  flex-shrink: 0;
+}
+.research-comparison {
+  border-left: 3px solid var(--recovery-line);
+  padding-left: 18px;
+  margin: 20px 0;
+}
+
+.recovery-zoom {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 14px/1.5 var(--font-ui);
+  color: var(--muted);
+  margin: 6px 0 12px;
+}

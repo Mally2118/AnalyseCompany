@@ -1,7 +1,9 @@
+import { RecoveryResearch } from '../components/RecoveryResearch';
+import { RecoveryChart } from '../charts/RecoveryChart';
 import { MetricHelp } from '../components/MetricHelp';
 import { metricForLabel } from '../data/metric-help';
 import { useState } from 'react';
-import type { Company, Mode } from '../data/types';
+import type { Company, Mode, ReturnKind } from '../data/types';
 import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
 import { companies } from '../data/types';
@@ -10,7 +12,24 @@ import { TimeChart, RiskScatter, companySeries } from '../charts/Charts';
 import { drawdowns, stdev } from '../calculations/statistics';
 import { metricExplanation } from '../data/metric-help';
 import { fmt, pct } from '../utils/format';
-export function Risk({ data, model, mode }: { data: DataSet; model: AnalysisModel; mode: Mode }) {
+export function Risk({
+  data,
+  model,
+  mode,
+  kind,
+  start,
+  rf,
+  weight,
+}: {
+  data: DataSet;
+  model: AnalysisModel;
+  mode: Mode;
+  kind: ReturnKind;
+  start: number;
+  rf: number;
+  weight: number;
+}) {
+  const [restored, setRestored] = useState(false);
   const [chartView, setChartView] = useState<'returns' | 'drawdown'>('drawdown');
   const cs: Company[] = mode === 'compare' ? ['SBER', 'T'] : [mode];
   const c = cs[0],
@@ -100,9 +119,33 @@ export function Risk({ data, model, mode }: { data: DataSet; model: AnalysisMode
       <div className="grid-two">
         <Card
           title="Накопленная стоимость"
-          subtitle="Начальная стоимость = 100 · дивиденды зависят от режима"
+          subtitle={
+            restored && data.recovery && mode !== 'SBER'
+              ? 'Начальная стоимость = 100 · пунктир T — условная оценка; цена и метод в подсказке. KPI рассчитаны только по фактам.'
+              : 'Начальная стоимость = 100 · дивиденды зависят от режима'
+          }
         >
-          <TimeChart data={wealth} series={companySeries(mode)} kind="area" />
+          {data.recovery && mode !== 'SBER' && (
+            <div className="recovery-controls segmented small" aria-label="Происхождение котировок">
+              <button className={!restored ? 'active' : ''} onClick={() => setRestored(false)}>
+                Фактические данные
+              </button>
+              <button className={restored ? 'active' : ''} onClick={() => setRestored(true)}>
+                Фактические + восстановленные данные
+              </button>
+            </div>
+          )}
+          {restored && data.recovery && mode !== 'SBER' ? (
+            <RecoveryChart
+              data={data}
+              model={model}
+              recovery={data.recovery}
+              kind={kind}
+              mode={mode}
+            />
+          ) : (
+            <TimeChart data={wealth} series={companySeries(mode)} kind="area" />
+          )}
         </Card>
         <Card
           title={chartView === 'drawdown' ? 'Просадка' : 'Месячная доходность'}
@@ -131,6 +174,7 @@ export function Risk({ data, model, mode }: { data: DataSet; model: AnalysisMode
           />
         </Card>
       </div>
+      <RecoveryResearch data={data} kind={kind} start={start} rf={rf} weight={weight} />
       <Disclosure title="Подробнее">
         <div className="grid-two">
           <Card

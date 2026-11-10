@@ -12,7 +12,14 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: scripts/requirements-recovery.txt
+      - run: python -m pip install -r scripts/requirements-recovery.txt
       - run: npm ci
+      - run: npm run recovery:check
       - run: npm run data:validate
       - run: npm test
       - run: npm run build

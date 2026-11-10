@@ -11,7 +11,10 @@
     "data:update": "node scripts/update-market.mjs",
     "data:validate": "tsx scripts/validate-data.ts",
     "test:e2e": "playwright test",
-    "format": "prettier --write src tests scripts *.ts *.json README.md docs/*.md .github/workflows/*.yml"
+    "format": "prettier --write src tests scripts *.ts *.json README.md docs/*.md .github/workflows/*.yml",
+    "recovery:fetch": "node scripts/fetch-recovery-inputs.mjs",
+    "recovery:build": "python3 scripts/build-recovery.py",
+    "recovery:check": "python3 scripts/build-recovery.py --check"
   },
   "dependencies": {
     "katex": "^0.19.1",
