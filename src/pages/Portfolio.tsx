@@ -402,6 +402,19 @@ export function Calculator(p: PortfolioControls) {
               : `${p.horizon} лет · годовые EPS, P/E и дивиденды`
           }
         >
+          <div className="calculator-risk" role="group" aria-label="Годовой риск портфеля">
+            <span>
+              Годовой риск портфеля <MetricHelp metric="portfolio_risk" />
+            </span>
+            <strong data-testid="calculator-risk" aria-live="polite">
+              {pct(p.model.portfolioStats?.annualVol, 2)}
+            </strong>
+            <p className="footnote">
+              Историческая годовая волатильность за {date(p.model.period.from)} —{' '}
+              {date(p.model.period.till)}. Это не вероятность убытка
+              {!historical && ' и не прогноз риска сценариев'}.
+            </p>
+          </div>
           <TimeChart
             data={historical ? (illustration?.path ?? []) : path}
             series={
@@ -567,7 +580,7 @@ export function Calculator(p: PortfolioControls) {
             <span>
               Годовая волатильность <MetricHelp metric="volatility" />
             </span>
-            <strong>{pct(p.model.portfolioStats?.annualVol)}</strong>
+            <strong>{pct(p.model.portfolioStats?.annualVol, 2)}</strong>
           </div>
           <div>
             <span>

@@ -2779,6 +2779,34 @@ select,
 :root {
   --recovery-line: #e9c97f;
 }
+.calculator-risk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--input);
+  font-family: var(--font-ui);
+}
+.calculator-risk > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+}
+.calculator-risk > strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.calculator-risk > p {
+  flex-basis: 100%;
+  color: var(--text);
+  font-size: 14px;
+}
 :root[data-theme='light'] {
   --recovery-line: #806018;
 }
