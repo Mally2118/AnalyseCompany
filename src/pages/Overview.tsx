@@ -1,4 +1,5 @@
 import { IndicatorSummary } from '../components/IndicatorSummary';
+import { useMemo, useState } from 'react';
 import { MetricHelp } from '../components/MetricHelp';
 import type { Mode, Company } from '../data/types';
 import { companies } from '../data/types';
@@ -6,6 +7,7 @@ import type { DataSet } from '../services/data';
 import type { AnalysisModel } from '../services/model';
 import { Card, Disclosure, KPI, SectionIntro } from '../components/ui';
 import { TimeChart, companySeries } from '../charts/Charts';
+import { historyData, type HistoryMode } from '../charts/history';
 import { fact, marketRisk, stability } from '../calculations/analysis';
 import { metricExplanation } from '../data/metric-help';
 import { fmt, pct, date } from '../utils/format';
@@ -24,14 +26,12 @@ export function Overview({
     c = cs[0],
     stat = model.stats[c];
   const other = mode === 'compare' ? 'T' : null;
-  const tValues = new Map(model.wealth.T.map((q) => [q.date, q.value]));
-  const wealth = model.wealth.SBER.filter((_, i, rows) => i % 5 === 0 || i === rows.length - 1).map(
-    (q) => ({
-      date: q.date,
-      SBER: q.value === null ? null : q.value * 100,
-      T: tValues.get(q.date) == null ? null : tValues.get(q.date)! * 100,
-    }),
+  const [display, setDisplay] = useState<HistoryMode>('index');
+  const history = useMemo(
+    () => historyData(data.market, model.wealth, model.period, display),
+    [data.market, model.wealth, model.period, display],
   );
+  const isPrice = display === 'price';
   return (
     <>
       <SectionIntro
@@ -69,10 +69,55 @@ export function Overview({
       </div>
       <div className="dashboard-main">
         <Card
-          title="Стоимость инвестиции"
-          subtitle="Начальная стоимость = 100 · выбранный режим доходности"
+          className="history-card"
+          title={isPrice ? 'Рыночная цена акции' : 'Индекс стоимости инвестиций'}
+          subtitle={
+            isPrice
+              ? 'Цена закрытия MOEX ISS в рублях за одну акцию, с учётом сплитов.'
+              : 'Начальная стоимость условно принимается за 100 для сравнения доходности акций. При смене периода индекс пересчитывается.'
+          }
         >
-          <TimeChart data={wealth} series={companySeries(mode)} kind="area" height={290} />
+          <div className="history-toolbar">
+            <span>Режим отображения:</span>
+            <div className="segmented history-mode" role="group" aria-label="Режим отображения">
+              <button
+                type="button"
+                className={!isPrice ? 'active' : ''}
+                aria-pressed={!isPrice}
+                onClick={() => setDisplay('index')}
+              >
+                Индекс доходности
+              </button>
+              <button
+                type="button"
+                className={isPrice ? 'active' : ''}
+                aria-pressed={isPrice}
+                onClick={() => setDisplay('price')}
+              >
+                Цена акции (₽)
+              </button>
+            </div>
+          </div>
+          <p className="history-period" aria-live="polite">
+            Даты графика: {history.length ? date(history[0].date) : 'Нет данных'} —{' '}
+            {history.length ? date(history[history.length - 1].date) : 'Нет данных'}.
+            {!isPrice && model.period.limited && ' База 100 — начало общего расчётного периода.'}
+          </p>
+          <TimeChart
+            data={history}
+            series={companySeries(mode)}
+            kind={isPrice ? 'line' : 'area'}
+            height={320}
+            unit={isPrice ? '₽' : 'пунктов'}
+            autoScale={isPrice}
+          />
+          {isPrice && (
+            <p className="history-note">
+              Дивиденды не учитываются; переключатель «С дивидендами» влияет на остальные показатели
+              сайта. T уже приведён к базе сплита 1:10. Пропуски котировок сохранены, модельные
+              оценки здесь не показаны.
+            </p>
+          )}
         </Card>
         <Card title="Краткий вывод">
           <div className="overview-status">

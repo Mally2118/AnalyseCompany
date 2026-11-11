@@ -723,6 +723,45 @@ select {
 .chart {
   min-width: 0;
 }
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.history-mode {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.history-mode button {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text);
+}
+.card.history-card > .history-period,
+.card.history-card > .history-note {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.history-note {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+@media (max-width: 760px) {
+  .history-mode {
+    width: 100%;
+  }
+  .history-mode button {
+    flex: 1 1 100px;
+    padding: 8px;
+  }
+}
 .chart-foot {
   border-top: 1px solid var(--border);
   display: flex;

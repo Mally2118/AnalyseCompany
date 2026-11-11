@@ -18,7 +18,7 @@ import {
   ZAxis,
 } from 'recharts';
 import type { Mode, Portfolio } from '../data/types';
-import { fmt, shortDate } from '../utils/format';
+import { date, fmt, shortDate } from '../utils/format';
 const grid = 'var(--border)';
 const tooltipStyle = {
   background: 'var(--card)',
@@ -39,6 +39,8 @@ export function TimeChart({
   percent = false,
   height = 285,
   xKey = 'date',
+  unit,
+  autoScale = false,
 }: {
   data: object[];
   series: Series[];
@@ -46,8 +48,10 @@ export function TimeChart({
   percent?: boolean;
   height?: number;
   xKey?: string;
+  unit?: 'пунктов' | '₽';
+  autoScale?: boolean;
 }) {
-  const common = { data, margin: { top: 15, right: 30, left: 0, bottom: 5 } },
+  const common = { data, margin: { top: unit ? 36 : 15, right: 30, left: 0, bottom: 5 } },
     axis = { stroke: 'var(--muted)', fontSize: 14, tickLine: false, axisLine: false };
   const elements = (
     <>
@@ -56,17 +60,40 @@ export function TimeChart({
         dataKey={xKey}
         {...axis}
         minTickGap={60}
+        interval={unit ? 'preserveStartEnd' : undefined}
         tickFormatter={(v) => (xKey === 'date' ? shortDate(String(v)) : String(v))}
       />
       <YAxis
         {...axis}
         width={82}
-        tickFormatter={(v) => `${fmt(Number(v), 0)}${percent ? '%' : ''}`}
+        domain={autoScale ? ['auto', 'auto'] : undefined}
+        label={
+          unit
+            ? {
+                value: unit === '₽' ? '₽ за акцию' : unit,
+                position: 'insideTopLeft',
+                dy: -22,
+                fill: 'var(--text)',
+                fontSize: 14,
+              }
+            : undefined
+        }
+        tickFormatter={(v) => `${fmt(Number(v), 0)}${percent ? '%' : unit === '₽' ? ' ₽' : ''}`}
       />
       <Tooltip
         contentStyle={tooltipStyle}
-        labelFormatter={(v) => (xKey === 'date' ? String(v) : `Год ${v}`)}
-        formatter={(v, name) => [`${fmt(Number(v), 2)}${percent ? '%' : ''}`, String(name)]}
+        filterNull={!unit}
+        labelFormatter={(v) =>
+          xKey === 'date' ? (unit ? date(String(v)) : String(v)) : `Год ${v}`
+        }
+        formatter={(v, name) => [
+          v == null
+            ? unit === '₽'
+              ? 'Нет котировки'
+              : 'Нет данных'
+            : `${fmt(Number(v), 2)}${percent ? '%' : unit ? ` ${unit}` : ''}`,
+          unit === '₽' ? `${name} · 1 акция` : String(name),
+        ]}
       />
       <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 14, paddingTop: 14 }} />
       {percent && <ReferenceLine y={0} stroke={grid} />}
