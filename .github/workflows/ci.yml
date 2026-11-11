@@ -23,5 +23,6 @@ jobs:
       - run: npm run data:validate
       - run: npm test
       - run: npm run build
-      - run: npx playwright install --with-deps chromium --only-shell
+      # The hosted runner has Chrome's system libraries; avoid an extra apt download.
+      - run: npx playwright install chromium --only-shell
       - run: npm run test:e2e
